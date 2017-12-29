@@ -56,7 +56,11 @@
 
 
 ### 源码阅读引导
-* 源码目录: \*/hadoop-yarn-server-resourcemanager/
+- 源码目录: \*/hadoop-yarn-server-resourcemanager/
+
+#### 相关链接
+- [YARN源码分析之AsyncDispatcher事件调度器]( http://bigdatadecode.club/YARN%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E4%B9%8BAsyncDispatcher%E4%BA%8B%E4%BB%B6%E8%B0%83%E5%BA%A6%E5%99%A8.html )
+
 
 #### Java包
 

@@ -44,6 +44,11 @@
 - 用户只能将应用程序提交到叶子队列, 因为其他队列**只是一个逻辑概念**用来辅助计算叶子队列的资源量,
 - 调度器总是优先选择当前资源使用率最低的队列, 并为之分配资源.
 
+
+### FIFO Scheduler
+
+
+
 ### Capacity Scheduler
 - 容量保证: 为每个队列设置资源最低保证和资源使用上限.
 - 灵活性: 如果一个队列的资源空闲, 可以暂时共享给其他队列.
@@ -88,6 +93,12 @@ message ResourceRequestProto {
 
 ### 源码阅读引导
 - 目录: \*/haddoop-yarn-server/hadoop-yarn-server-resourcemanager/*
+
+#### 相关链接
+- [hadoop 2.6 YarnScheduler接口用到的类分析]( http://blog.csdn.net/houzhizhen/article/details/50773718 )
+- [Hadoop 三大调度器源码分析及编写自己的调度器]( http://www.cnblogs.com/zhangchao0515/p/6955126.html )
+
+![](./img/scheduler_uml.png)
 
 #### 相关Java包:
 - \*.scheduler: 资源调度器接口的定义: ResourceScheduler(所有调度器主类必须实现的接口), SchedulerNode(用于跟踪集群中一个节点的资源状态), SchedulerApplication(用于追踪一个应用程序的资源分配情况), Queue(描述一个队列的基本信息)...
