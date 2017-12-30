@@ -129,19 +129,143 @@ hadoop/
 
 
 ### 服务库
-* 包名: org.apache.hadoop.service
 * 采用基于服务的对象管理模型对长生命周期的对象进行管理:
   <p> 四个状态: NOTINITED(被创建), INITED(已经初始化), STARTED(已经启动), STOPED(已经停止) </p>
   <p> 任何服务状态的变化都可以出触发另外的一些动作 </p>
   <p> 可以通过组合的方式对任意服务进行组合, 以便进行统一管理 </p>
 
-![](./img/yarn_service_model.png)
+![](./img/yarn_service_uml.png)
+
+* 包名: hadoop-common/org.apache.hadoop.service
+```java
+// org.apache.hadoop.service
+// Observer设计模式
+
+public interface Service extends Closable{
+  // Service的基本定义
+}
+
+publice class ServiceStateModel{
+  /* 服务的状态模型, 保证状态之间转换的合法性 */
+    private static final boolean[][] statemap = {
+      //                uninited inited started stopped
+      /* uninited  */    {false, true,  false,  true},
+      /* inited    */    {false, true,  true,   true},
+      /* started   */    {false, false, true,   true},
+      /* stopped   */    {false, false, false,  true},
+    };
+    public static boolean isValidStateTransition(Service.STATE current,
+                                               Service.STATE proposed) {
+      return statemap[current.getValue()][proposed.getValue()];
+  }
+}
+
+public class AbstractService implements Service{
+  // Service的基本实现:
+  // 服务状态的转换操作, 与ServiceStateChangeListener的通信
+}
+
+public class CompositeService extends AbstractService{
+  // 维护多个服务
+  private final List<Service> serviceList = new ArrayList<Service>();
+}
+
+
+public interface ServiceStateChangeListener{
+  // 定义服务状态改变时的回调接口
+  void stateChanged(Service service);
+}
+
+public final class ServiceOperations {
+  // 定义了对服务的一些操作
+notify
+  public static class ServiceListeners {
+    // 记录一个服务的Listener, 当服务的状态改变时, 会通过notifyListeners函数
+    // 回调所有Listener的stataChanged接口通知各个Listener
+    private final List<ServiceStateChangeListener> listeners =
+      new ArrayList<ServiceStateChangeListener>();
+  }
+}
+```
 
 
 ### 事件库
 * 基于事件驱动的并发模型, 将各种处理逻辑抽象成事件和对应事件调度器, 并将每类事件的处理过程分割成多个步骤用`有限状态机`表示.
-* 状态机类: hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/state
-
 ![](./img/yarn_event_model.png)
 
 处理请求会作为事件进入系统,由中央异步调度器(Async-Dispatcher)负责传递给相应事件调度器(Event Handler)。该事件调度器可能将该事件转发给另外一个事件调度器,也可能交给一个带有有限状态机的事件处理器,其处理结果也以事件的形式输出给中央异步调度器。而新的事件会再次被中央异步调度器转发给下一个事件调度器,直至处理完成(达到终止条件)。
+
+* 事件库: hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/event
+![](./img/yarn_even_uml.jpg)
+
+```java
+public interface Event<TYPE extends Enum<TYPE>> {
+  // 定义事件的接口
+}
+
+public abstract class AbstractEvent<TYPE extends Enum<TYPE>>
+    implements Event<TYPE> {
+  // 实现事件接口
+}
+
+public interface EventHandler<T extends Event>{
+  // 定义处理`T`类型事件的接口
+  void handle(T event);
+}
+
+public interface Dispatcher {
+  // 事件调调度接口
+}
+
+public class AsyncDispatcher
+    extends AbstractService implements Dispatcher {
+  // 异步调度器
+
+  private final EventHandler handlerInstance = new GenericEventHandler();
+  private Thread eventHandlingThread;
+  private final BlockingQueue<Event> eventQueue;
+  protected final Map<Class<? extends Enum>, EventHandler> eventDispatchers;
+
+  public void register(Class<? extends Enum> eventType,
+                       EventHandler handler) {
+    // 对外的事件处理器注册接口
+    eventDispatchers.put(eventType, handler);
+  }
+
+  protected void serviceStart() throws Exception {
+    super.serviceStart();
+    eventHandlingThread = new Thread(createThread());
+  }
+  Runnable createThread() {
+    return new Runnable() {
+      @Override
+      public void run() {
+        while (!stopped && !Thread.currentThread().isInterrupted()) {
+          /* 从eventQueue中取出一个事件,
+             然后根据事件类型从eventDispatchers中找到对应的EventHandler进行处理.
+          */
+        }
+      }
+    };
+  }
+
+  public EventHandler getEventHandler() {
+    // 对外的事件调度接口
+    return handlerInstance;
+  }
+  class GenericEventHandler implements EventHandler<Event> {
+    public void handle(Event event) {
+      eventQueue.put(event);
+    }
+  }
+
+  static class MultiListenerHandler implements EventHandler<Event> {
+    // 用于处理一个Event有多个Handler的情况
+     List<EventHandler<Event>> listofHandlers;
+  }
+}
+```
+
+
+
+service => event => statemachine => fifo scheduler => fair scheduler => my scheduler
