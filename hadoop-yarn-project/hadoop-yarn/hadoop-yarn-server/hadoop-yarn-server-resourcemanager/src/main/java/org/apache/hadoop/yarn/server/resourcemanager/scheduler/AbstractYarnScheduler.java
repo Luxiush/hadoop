@@ -109,12 +109,14 @@ public abstract class AbstractYarnScheduler
     extends AbstractService implements ResourceScheduler {
 
   private static final Log LOG = LogFactory.getLog(AbstractYarnScheduler.class);
-
+  
+  // SchedulerNode的一个集合, 集群各个节点的信息
   protected final ClusterNodeTracker<N> nodeTracker =
       new ClusterNodeTracker<>();
 
   protected Resource minimumAllocation;
-
+  
+  //
   protected volatile RMContext rmContext;
 
   private volatile Priority maxClusterLevelAppPriority;
@@ -129,6 +131,7 @@ public abstract class AbstractYarnScheduler
    * All schedulers which are inheriting AbstractYarnScheduler should use
    * concurrent version of 'applications' map.
    */
+  // applications记录当前Scheduler需要调度的所有应用 [lxs]
   protected ConcurrentMap<ApplicationId, SchedulerApplication<T>> applications;
   protected int nmExpireInterval;
   protected long nmHeartbeatInterval;

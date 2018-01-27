@@ -394,9 +394,9 @@ public class FifoScheduler extends
   public synchronized void addApplication(ApplicationId applicationId,
       String queue, String user, boolean isAppRecovering) {
     SchedulerApplication<FifoAppAttempt> application =
-        new SchedulerApplication<>(DEFAULT_QUEUE, user);
+        new SchedulerApplication<>(DEFAULT_QUEUE, user);	
     applications.put(applicationId, application);
-    metrics.submitApp(user);
+    metrics.submitApp(user);	// ??? [lxs]
     LOG.info("Accepted application " + applicationId + " from user: " + user
         + ", currently num of applications: " + applications.size());
     if (isAppRecovering) {
@@ -408,7 +408,13 @@ public class FifoScheduler extends
         .handle(new RMAppEvent(applicationId, RMAppEventType.APP_ACCEPTED));
     }
   }
-
+  
+  /**[lxs]
+   * addApplication的时候只是在保存所有需要调用应用信息的applications中
+   * 为该applicationId添加一条记录,
+   * 还没有为需要调度的应用创建调度实例appAttempt.
+   * appAttempt在这里添加.
+  **/
   @VisibleForTesting
   public synchronized void
       addApplicationAttempt(ApplicationAttemptId appAttemptId,
@@ -675,6 +681,10 @@ public class FifoScheduler extends
     return assignedContainers;
   }
 
+  /** [lxs]
+   * assignableContainers: 还可以分配的container数 ???
+   * capacity: 要分配的container的大小 ???
+   **/
   private int assignContainer(FiCaSchedulerNode node, FifoAppAttempt application,
       SchedulerRequestKey schedulerKey, int assignableContainers,
       Resource capability, NodeType type) {

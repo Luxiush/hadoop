@@ -85,7 +85,7 @@ public interface SchedulingPlacementSet<N extends SchedulerNode> {
    * pendingAsk, returns 0
    *
    * @param resourceName resourceName
-   * @return #pending-allocations
+   * @return #pending-allocations	// pending: 待定的,即将发生的
    */
   int getOutstandingAsksCount(String resourceName);
 
