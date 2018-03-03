@@ -118,7 +118,7 @@ public class TestFifoScheduler {
 
   private ResourceManager resourceManager = null;
   private static Configuration conf;
-  private static final RecordFactory recordFactory = 
+  private static final RecordFactory recordFactory = 	// RecordFactory ??? 
       RecordFactoryProvider.getRecordFactory(null);
 
   private final static ContainerUpdates NULL_UPDATE_REQUESTS =
@@ -219,6 +219,10 @@ public class TestFifoScheduler {
     scheduler.stop();
   }
 
+  /**
+   * 在只有一个节点的集群上添加一个app, 然后用FifoScheduler依次处理
+   * NODE_LOCAL, RACK_LOCAL和ANY三种类型的资源请求.
+   */
   @Test(timeout=2000)
   public void testNodeLocalAssignment() throws Exception {
     AsyncDispatcher dispatcher = new InlineDispatcher();
@@ -324,6 +328,8 @@ public class TestFifoScheduler {
     scheduler.init(conf);
     scheduler.start();
     scheduler.reinitialize(new Configuration(), rmContext);
+    
+    // 添加一个节点
     RMNode node0 = MockNodes.newNodeInfo(1,
         Resources.createResource(2048, 4), 1, "127.0.0.1");
     NodeAddedSchedulerEvent nodeEvent1 = new NodeAddedSchedulerEvent(node0);
@@ -331,6 +337,7 @@ public class TestFifoScheduler {
     
     assertEquals(scheduler.getNumClusterNodes(), 1);
     
+    // 更新节点资源
     Resource newResource = Resources.createResource(1024, 4);
     
     NodeResourceUpdateSchedulerEvent node0ResourceUpdate = new 
@@ -346,6 +353,7 @@ public class TestFifoScheduler {
     QueueInfo queueInfo = scheduler.getQueueInfo(null, false, false);
     Assert.assertEquals(0.0f, queueInfo.getCurrentCapacity(), 0.0f);
     
+    // 新建一个应用
     int _appId = 1;
     int _appAttemptId = 1;
     ApplicationAttemptId appAttemptId = createAppAttemptId(_appId,
@@ -360,6 +368,7 @@ public class TestFifoScheduler {
         new AppAttemptAddedSchedulerEvent(appAttemptId, false);
     scheduler.handle(attemptEvent);
 
+    // 处理应用的资源请求
     int memory = 1024;
     int priority = 1;
 

@@ -150,7 +150,7 @@ public class SchedulerApplicationAttempt implements SchedulableEntity {
 
   // This pendingRelease is used in work-preserving recovery scenario to keep
   // track of the AM's outstanding release requests. RM on recovery could
-  // receive the release request form AM before it receives the container status
+  // receive the release request from AM before it receives the container status
   // from NM for recovery. In this case, the to-be-recovered containers reported
   // by NM should not be recovered.
   private Set<ContainerId> pendingRelease = null;
@@ -823,7 +823,7 @@ public class SchedulerApplicationAttempt implements SchedulableEntity {
 
   /**
    * A container is promoted if its executionType is changed from
-   * OPPORTUNISTIC to GUARANTEED. It id demoted if the change is from
+   * OPPORTUNISTIC to GUARANTEED. It is demoted if the change is from
    * GUARANTEED to OPPORTUNISTIC.
    * @return Newly Promoted and Demoted containers
    */

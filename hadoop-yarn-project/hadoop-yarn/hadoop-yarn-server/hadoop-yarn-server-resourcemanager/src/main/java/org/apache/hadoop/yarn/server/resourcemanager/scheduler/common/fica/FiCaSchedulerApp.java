@@ -847,7 +847,10 @@ public class FiCaSchedulerApp extends SchedulerApplicationAttempt {
   public LeafQueue getCSLeafQueue() {
     return (LeafQueue)queue;
   }
-
+  
+  /**
+   * 	[lxs]
+   */
   public CSAssignment assignContainers(Resource clusterResource,
       PlacementSet<FiCaSchedulerNode> ps, ResourceLimits currentResourceLimits,
       SchedulingMode schedulingMode, RMContainer reservedContainer) {

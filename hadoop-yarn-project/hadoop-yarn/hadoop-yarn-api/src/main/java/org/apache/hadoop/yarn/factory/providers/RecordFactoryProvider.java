@@ -55,9 +55,9 @@ public class RecordFactoryProvider {
   private static Object getFactoryClassInstance(String factoryClassName) {
     try {
       Class<?> clazz = Class.forName(factoryClassName);
-      Method method = clazz.getMethod("get", null);
+      Method method = clazz.getMethod("get", null);	// 根据函数名和参数获取类的方法.
       method.setAccessible(true);
-      return method.invoke(null, null);
+      return method.invoke(null, null);	// 调用指定方法
     } catch (ClassNotFoundException e) {
       throw new YarnRuntimeException(e);
     } catch (NoSuchMethodException e) {

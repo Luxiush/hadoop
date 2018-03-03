@@ -51,6 +51,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Splitter;
 
+/**
+ * 可以看做是树形队列中的一个节点.
+ */
 @InterfaceAudience.Private
 @Metrics(context="yarn")
 public class QueueMetrics implements MetricsSource {

@@ -177,7 +177,7 @@ public class AppSchedulingInfo {
     try {
       this.writeLock.lock();
 
-      // A map to group resource requests and dedup
+      // A map to group resource requests and dedup(去重)
       Map<SchedulerRequestKey, Map<String, ResourceRequest>> dedupRequests =
           new HashMap<>();
 

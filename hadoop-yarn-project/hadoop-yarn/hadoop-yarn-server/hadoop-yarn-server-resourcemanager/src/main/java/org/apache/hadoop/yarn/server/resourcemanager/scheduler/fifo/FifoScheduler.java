@@ -346,7 +346,7 @@ public class FifoScheduler extends
       return EMPTY_ALLOCATION;
     }
 
-    // Sanity check
+    // Sanity check (完整性检查)
     normalizeRequests(ask);
 
     // Release containers
@@ -396,7 +396,7 @@ public class FifoScheduler extends
     SchedulerApplication<FifoAppAttempt> application =
         new SchedulerApplication<>(DEFAULT_QUEUE, user);	
     applications.put(applicationId, application);
-    metrics.submitApp(user);	// ??? [lxs]
+    metrics.submitApp(user);
     LOG.info("Accepted application " + applicationId + " from user: " + user
         + ", currently num of applications: " + applications.size());
     if (isAppRecovering) {
@@ -498,6 +498,8 @@ public class FifoScheduler extends
   
   /**
    * Heart of the scheduler...
+   * 两层for循环, 先按顺序从applications中取出各个application(Attempt), 
+   * 然后根据application的schedulerKey为其分配container. [lxs]
    * 
    * @param node node on which resources are available to be allocated
    */
@@ -507,6 +509,7 @@ public class FifoScheduler extends
         " #applications=" + applications.size());
 
     // Try to assign containers to applications in fifo order
+    // 依次为app分配container. Fifo在这里体现 ??? [lxs]
     for (Map.Entry<ApplicationId, SchedulerApplication<FifoAppAttempt>> e : applications
         .entrySet()) {
       FifoAppAttempt application = e.getValue().getCurrentAppAttempt();
@@ -682,8 +685,8 @@ public class FifoScheduler extends
   }
 
   /** [lxs]
-   * assignableContainers: 还可以分配的container数 ???
-   * capacity: 要分配的container的大小 ???
+   * assignableContainers: 还可以分配的container数
+   * capability: 一个container的容量
    **/
   private int assignContainer(FiCaSchedulerNode node, FifoAppAttempt application,
       SchedulerRequestKey schedulerKey, int assignableContainers,
@@ -991,6 +994,7 @@ public class FifoScheduler extends
           + node.getUnallocatedResource());
     }
 
+    // 更新可用资源 [lxs]
     updateAvailableResourcesMetrics();
   }
 

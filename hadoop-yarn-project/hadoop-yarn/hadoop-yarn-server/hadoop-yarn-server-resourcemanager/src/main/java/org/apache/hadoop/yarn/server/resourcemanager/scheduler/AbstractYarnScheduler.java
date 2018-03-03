@@ -1054,7 +1054,7 @@ public abstract class AbstractYarnScheduler
     int releasedContainers = updateCompletedContainers(completedContainers,
         releasedResources, nm.getNodeID());
 
-    // If the node is decommissioning, send an update to have the total
+    // If the node is decommissioning, send an update to have the total		// decommission 使退役 [lxs]
     // resource equal to the used resource, so no available resource to
     // schedule.
     // TODO YARN-5128: Fix possible race-condition when request comes in before
