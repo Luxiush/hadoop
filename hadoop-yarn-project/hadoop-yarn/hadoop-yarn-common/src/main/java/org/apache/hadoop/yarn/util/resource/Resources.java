@@ -118,7 +118,7 @@ public class Resources {
   };
 
   public static Resource createResource(int memory) {
-    return createResource(memory, (memory > 0) ? 1 : 0);
+    return createResource(memory, (memory > 0) ? 1 : 0);	// 默认1核
   }
 
   public static Resource createResource(int memory, int cores) {

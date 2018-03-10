@@ -80,6 +80,7 @@ public class FifoAppAttempt extends FiCaSchedulerApp {
       liveContainers.put(containerId, rmContainer);
 
       // Update consumption and track allocations
+      // Update related resource request [lxs]
       List<ResourceRequest> resourceRequestList = appSchedulingInfo.allocate(
           type, node, schedulerKey, container);
 
@@ -87,6 +88,7 @@ public class FifoAppAttempt extends FiCaSchedulerApp {
           container.getResource());
 
       // Update resource requests related to "request" and store in RMContainer
+      // Store related "request" in RMContainer [lxs]
       ((RMContainerImpl) rmContainer).setResourceRequests(resourceRequestList);
 
       // Inform the container

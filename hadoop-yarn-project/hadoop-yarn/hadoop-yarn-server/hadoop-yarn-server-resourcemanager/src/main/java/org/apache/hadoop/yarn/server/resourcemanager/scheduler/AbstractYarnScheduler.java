@@ -639,7 +639,7 @@ public abstract class AbstractYarnScheduler
     // If the container is getting killed in ACQUIRED state, the requester (AM
     // for regular containers and RM itself for AM container) will not know what
     // happened. Simply add the ResourceRequest back again so that requester
-    // doesn't need to do anything conditionally.
+    // doesn't need to do anything conditionally(有条件的).
     recoverResourceRequestForContainer(rmContainer);
   }
 
@@ -1054,7 +1054,7 @@ public abstract class AbstractYarnScheduler
     int releasedContainers = updateCompletedContainers(completedContainers,
         releasedResources, nm.getNodeID());
 
-    // If the node is decommissioning, send an update to have the total		// decommission 使退役 [lxs]
+    // If the node is decommissioning(使退役), send an update to have the total
     // resource equal to the used resource, so no available resource to
     // schedule.
     // TODO YARN-5128: Fix possible race-condition when request comes in before

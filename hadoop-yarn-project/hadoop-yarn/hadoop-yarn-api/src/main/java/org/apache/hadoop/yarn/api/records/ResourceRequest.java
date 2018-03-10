@@ -42,7 +42,7 @@ import org.apache.hadoop.yarn.util.Records;
  *   </li>
  *   <li>{@link Resource} required for each request.</li>
  *   <li>
- *     Number of containers, of above specifications, which are required
+ *     Number of containers, of above specifications(规格), which are required
  *     by the application.
  *   </li>
  *   <li>

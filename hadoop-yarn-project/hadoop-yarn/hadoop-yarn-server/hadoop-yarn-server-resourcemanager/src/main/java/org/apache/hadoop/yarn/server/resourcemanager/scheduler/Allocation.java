@@ -28,6 +28,10 @@ import org.apache.hadoop.yarn.api.records.NMToken;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.ResourceRequest;
 
+/**
+ * 一个Allocation可以看做是RM的一次资源分配. RM分配的资源最终以Allocation对象的形式返回给应用
+ * (这里应用指的是真实的应用, 而不是Scheduler中的Application和AppAttempt对象). 
+ **/
 public class Allocation {
   
   final List<Container> containers;

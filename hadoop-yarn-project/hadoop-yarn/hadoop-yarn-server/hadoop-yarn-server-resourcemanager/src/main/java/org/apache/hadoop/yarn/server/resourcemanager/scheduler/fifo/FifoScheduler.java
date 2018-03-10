@@ -349,7 +349,7 @@ public class FifoScheduler extends
     // Sanity check (完整性检查)
     normalizeRequests(ask);
 
-    // Release containers
+    // Release containers, 释放掉应用不再使用的container
     releaseContainers(release, application);
 
     synchronized (application) {
@@ -368,7 +368,7 @@ public class FifoScheduler extends
             " application=" + application);
         application.showRequests();
 
-        // Update application requests
+        // Update application requests, 更新对应appAttempt中的资源请求. 
         application.updateResourceRequests(ask);
 
         LOG.debug("allocate: post-update" +
@@ -564,6 +564,9 @@ public class FifoScheduler extends
     }
   }
 
+  /**
+   * ???
+   **/
   private int getMaxAllocatableContainers(FifoAppAttempt application,
       SchedulerRequestKey schedulerKey, FiCaSchedulerNode node, NodeType type) {
     PendingAsk offswitchAsk = application.getPendingAsk(schedulerKey,
@@ -599,6 +602,11 @@ public class FifoScheduler extends
   }
 
 
+  /**
+   * 从assignNodeLocalContainers,assignRackLocalContainer,assignOffSwitchContainer
+   * 这三个函数的实现逻辑来看, NODE_LOCAL,RACK_LOCAL,OFF_SWITCH三种类型的资源请求存在一种
+   * 范围上的包含关系: NODE_LOCAL包含于RACK_LOCAL, RACK_LOCAL包含于OFF_SWITCH. 
+   **/
   private int assignContainersOnNode(FiCaSchedulerNode node, 
       FifoAppAttempt application, SchedulerRequestKey schedulerKey
   ) {
@@ -620,7 +628,7 @@ public class FifoScheduler extends
         " application=" + application.getApplicationId().getId() +
         " priority=" + schedulerKey.getPriority() +
         " #assigned=" + 
-        (nodeLocalContainers + rackLocalContainers + offSwitchContainers));
+        (nodeLocalContainers +","+ rackLocalContainers +","+ offSwitchContainers));
 
 
     return (nodeLocalContainers + rackLocalContainers + offSwitchContainers);
@@ -691,7 +699,7 @@ public class FifoScheduler extends
   private int assignContainer(FiCaSchedulerNode node, FifoAppAttempt application,
       SchedulerRequestKey schedulerKey, int assignableContainers,
       Resource capability, NodeType type) {
-    LOG.debug("assignContainers:" +
+    LOG.debug("assignContainer:" +
         " node=" + node.getRMNode().getNodeAddress() + 
         " application=" + application.getApplicationId().getId() + 
         " priority=" + schedulerKey.getPriority().getPriority() +
@@ -720,14 +728,14 @@ public class FifoScheduler extends
         
         // Allocate!
         
-        // Inform the application
+        // Inform the application, 每成功分配一个container, 相应请求的numContainers就减1.
         RMContainer rmContainer = application.allocate(type, node, schedulerKey,
             container);
 
         // Inform the node
         node.allocateContainer(rmContainer);
 
-        // Update usage for this container
+        // Update usage for this container, 更新集群的资源使用情况
         increaseUsedResources(rmContainer);
       }
 
@@ -975,6 +983,7 @@ public class FifoScheduler extends
 
   @Override
   protected synchronized void nodeUpdate(RMNode nm) {
+  	// 分配container之前先更新节点信息. 
     super.nodeUpdate(nm);
 
     FiCaSchedulerNode node = (FiCaSchedulerNode) getNode(nm.getNodeID());

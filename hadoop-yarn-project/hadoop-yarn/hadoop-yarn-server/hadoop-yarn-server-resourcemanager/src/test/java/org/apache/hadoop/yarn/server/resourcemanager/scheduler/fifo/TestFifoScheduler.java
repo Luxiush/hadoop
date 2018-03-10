@@ -118,25 +118,33 @@ public class TestFifoScheduler {
 
   private ResourceManager resourceManager = null;
   private static Configuration conf;
-  private static final RecordFactory recordFactory = 	// RecordFactory ??? 
+  private static final RecordFactory recordFactory =
       RecordFactoryProvider.getRecordFactory(null);
 
   private final static ContainerUpdates NULL_UPDATE_REQUESTS =
       new ContainerUpdates();
 
-  @Before
+  private static int setUpCnt = 0;
+  private static int tearDownCnt = 0;
+  
+  @Before		// 初始化
   public void setUp() throws Exception {
+  	LOG.info("\n>>>>>> setUp " + (++setUpCnt) + "\n");
     conf = new Configuration();
     conf.setClass(YarnConfiguration.RM_SCHEDULER,
         FifoScheduler.class, ResourceScheduler.class);
     resourceManager = new MockRM(conf);
+    LOG.info("\nsetUp " + setUpCnt + " Done<<<<<<\n");
   }
 
-  @After
+  @After		// 清场
   public void tearDown() throws Exception {
+  	LOG.info("\n>>>>>> tearDown " + (++tearDownCnt) + "\n");
     resourceManager.stop();
+    LOG.info("\ntearDown " + tearDownCnt + " Done<<<<<<\n");
   }
   
+  // 通过NODE_ADDED事件向RM注册一个节点
   private org.apache.hadoop.yarn.server.resourcemanager.NodeManager
       registerNode(String hostName, int containerManagerPort, int nmHttpPort,
           String rackName, Resource capability) throws IOException,
@@ -145,6 +153,7 @@ public class TestFifoScheduler {
         new org.apache.hadoop.yarn.server.resourcemanager.NodeManager(hostName,
             containerManagerPort, nmHttpPort, rackName, capability,
             resourceManager);
+    
     NodeAddedSchedulerEvent nodeAddEvent1 =
         new NodeAddedSchedulerEvent(resourceManager.getRMContext().getRMNodes()
             .get(nm.getNodeId()));
@@ -171,7 +180,9 @@ public class TestFifoScheduler {
     request.setPriority(prio);
     return request;
   }
-
+  
+  // Test Cases: 
+  
   @Test(timeout=5000)
   public void testFifoSchedulerCapacityWhenNoNMs() {
     FifoScheduler scheduler = new FifoScheduler();
@@ -179,6 +190,9 @@ public class TestFifoScheduler {
     Assert.assertEquals(0.0f, queueInfo.getCurrentCapacity(), 0.0f);
   }
   
+  /**
+   * Test APP_ATTEMP_ADDED scheduler event.
+   **/
   @Test(timeout=5000)
   public void testAppAttemptMetrics() throws Exception {
     AsyncDispatcher dispatcher = new InlineDispatcher();
@@ -218,13 +232,10 @@ public class TestFifoScheduler {
     Assert.assertEquals(1, afterAppsSubmitted - beforeAppsSubmitted);
     scheduler.stop();
   }
-
-  /**
-   * 在只有一个节点的集群上添加一个app, 然后用FifoScheduler依次处理
-   * NODE_LOCAL, RACK_LOCAL和ANY三种类型的资源请求.
-   */
-  @Test(timeout=2000)
+  
+  @Test(timeout=6000)
   public void testNodeLocalAssignment() throws Exception {
+  	LOG.info("testNodeLocalAssignment ------");
     AsyncDispatcher dispatcher = new InlineDispatcher();
     Configuration conf = new Configuration();
     RMContainerTokenSecretManager containerTokenSecretManager =
@@ -247,12 +258,14 @@ public class TestFifoScheduler {
     scheduler.init(conf);
     scheduler.start();
     scheduler.reinitialize(new Configuration(), rmContext);
-
+    
+    LOG.info("NodeAddedSchedulerEvent ------");
     RMNode node0 = MockNodes.newNodeInfo(1,
         Resources.createResource(1024 * 64), 1, "127.0.0.1");
     NodeAddedSchedulerEvent nodeEvent1 = new NodeAddedSchedulerEvent(node0);
     scheduler.handle(nodeEvent1);
-
+    
+    LOG.info("Add an application to scheduler ------");
     int _appId = 1;
     int _appAttemptId = 1;
     ApplicationAttemptId appAttemptId = createAppAttemptId(_appId,
@@ -268,7 +281,8 @@ public class TestFifoScheduler {
         new AppAttemptAddedSchedulerEvent(appAttemptId, false);
     scheduler.handle(attemptEvent);
 
-    int memory = 64;
+    LOG.info("Creating 3 resourse requests ------");
+    int memory = 64;		// 64G = 65536Byte
     int nConts = 3;
     int priority = 20;
 
@@ -279,30 +293,49 @@ public class TestFifoScheduler {
         node0.getRackName(), priority, nConts);
     ResourceRequest any = createResourceRequest(memory, ResourceRequest.ANY, priority,
         nConts);
+    // NodeLocal
+    /*
     ask.add(nodeLocal);
     ask.add(rackLocal);
     ask.add(any);
+    */
+    // RackLocal
+    ask.add(rackLocal);
+    ask.add(any);
+    
+    // Any
+    // ask.add(any);
+    
+    
+    LOG.info("Scheduler is allocating resource request for " + 
+    					appAttemptId + "------");
     scheduler.allocate(appAttemptId, ask, new ArrayList<ContainerId>(),
         null, null, NULL_UPDATE_REQUESTS);
 
     NodeUpdateSchedulerEvent node0Update = new NodeUpdateSchedulerEvent(node0);
 
     // Before the node update event, there are 3 local requests outstanding
-    Assert.assertEquals(3, nodeLocal.getNumContainers());
+    // Assert.assertEquals(nConts, nodeLocal.getNumContainers());
+    Assert.assertEquals(nConts, any.getNumContainers());
 
+
+    LOG.info("Scheduler is handling an NODE_UPDATE event ------");
     scheduler.handle(node0Update);
 
     // After the node update event, check that there are no more local requests
     // outstanding
-    Assert.assertEquals(0, nodeLocal.getNumContainers());
+    // Assert.assertEquals(0, nodeLocal.getNumContainers());
+    Assert.assertEquals(0, any.getNumContainers());
+
     //Also check that the containers were scheduled
     SchedulerAppReport info = scheduler.getSchedulerAppInfo(appAttemptId);
-    Assert.assertEquals(3, info.getLiveContainers().size());
+    Assert.assertEquals(nConts, info.getLiveContainers().size());
     scheduler.stop();
   }
   
   @Test(timeout=2000)
   public void testUpdateResourceOnNode() throws Exception {
+  	LOG.debug("--- testUpdateResourceOnNode ---");
     AsyncDispatcher dispatcher = new InlineDispatcher();
     Configuration conf = new Configuration();
     RMContainerTokenSecretManager containerTokenSecretManager =
@@ -330,6 +363,7 @@ public class TestFifoScheduler {
     scheduler.reinitialize(new Configuration(), rmContext);
     
     // 添加一个节点
+    LOG.debug("--- Add a node to cluster ---");
     RMNode node0 = MockNodes.newNodeInfo(1,
         Resources.createResource(2048, 4), 1, "127.0.0.1");
     NodeAddedSchedulerEvent nodeEvent1 = new NodeAddedSchedulerEvent(node0);
@@ -338,6 +372,7 @@ public class TestFifoScheduler {
     assertEquals(scheduler.getNumClusterNodes(), 1);
     
     // 更新节点资源
+    LOG.debug("--- Node resource update event ---");
     Resource newResource = Resources.createResource(1024, 4);
     
     NodeResourceUpdateSchedulerEvent node0ResourceUpdate = new 
@@ -354,6 +389,7 @@ public class TestFifoScheduler {
     Assert.assertEquals(0.0f, queueInfo.getCurrentCapacity(), 0.0f);
     
     // 新建一个应用
+    LOG.debug("--- Add an application attempt ---");
     int _appId = 1;
     int _appAttemptId = 1;
     ApplicationAttemptId appAttemptId = createAppAttemptId(_appId,
@@ -369,6 +405,7 @@ public class TestFifoScheduler {
     scheduler.handle(attemptEvent);
 
     // 处理应用的资源请求
+    LOG.debug("--- Create a resource request and update ---");
     int memory = 1024;
     int priority = 1;
 
@@ -384,7 +421,8 @@ public class TestFifoScheduler {
     ask.add(any);
     scheduler.allocate(appAttemptId, ask, new ArrayList<ContainerId>(),
         null, null, NULL_UPDATE_REQUESTS);
-
+    
+    LOG.debug("--- Node update event ---");
     // Before the node update event, there are one local request
     Assert.assertEquals(1, nodeLocal.getNumContainers());
 
@@ -402,7 +440,7 @@ public class TestFifoScheduler {
     Assert.assertEquals(1.0f, queueInfo.getCurrentCapacity(), 0.0f);
   }
   
-//  @Test
+  @Test
   public void testFifoScheduler() throws Exception {
 
     LOG.info("--- START: testFifoScheduler ---");

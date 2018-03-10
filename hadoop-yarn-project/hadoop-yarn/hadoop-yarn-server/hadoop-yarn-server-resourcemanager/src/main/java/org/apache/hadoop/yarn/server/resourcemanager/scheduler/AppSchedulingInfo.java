@@ -52,7 +52,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.placement.Schedul
 import org.apache.hadoop.yarn.server.scheduler.SchedulerRequestKey;
 import org.apache.hadoop.yarn.util.resource.Resources;
 /**
- * This class keeps track of all the consumption of an application. This also
+ * This class keeps track of all the consumption(消费) of an application. This also
  * keeps track of current running/completed containers for the application.
  */
 @Private
@@ -63,7 +63,7 @@ public class AppSchedulingInfo {
 
   private final ApplicationId applicationId;
   private final ApplicationAttemptId applicationAttemptId;
-  private final AtomicLong containerIdCounter;
+  private final AtomicLong containerIdCounter;	// 用于生成containerId
   private final String user;
 
   private Queue queue;
@@ -181,7 +181,7 @@ public class AppSchedulingInfo {
       Map<SchedulerRequestKey, Map<String, ResourceRequest>> dedupRequests =
           new HashMap<>();
 
-      // Group resource request by schedulerRequestKey and resourceName
+      // Group(组织) resource request by schedulerRequestKey and resourceName
       for (ResourceRequest request : requests) {
         SchedulerRequestKey schedulerKey = SchedulerRequestKey.create(request);
         if (!dedupRequests.containsKey(schedulerKey)) {
@@ -191,7 +191,7 @@ public class AppSchedulingInfo {
         dedupRequests.get(schedulerKey).put(request.getResourceName(), request);
       }
 
-      // Update scheduling placement set
+      // Update scheduling placement set, 用新来的去更新现有的. 
       offswitchResourcesUpdated =
           addToPlacementSets(
               recoverPreemptedRequestForAContainer, dedupRequests);
@@ -236,7 +236,8 @@ public class AppSchedulingInfo {
     }
     return offswitchResourcesUpdated;
   }
-
+  
+  // ???
   private void updatePendingResources(ResourceRequest lastRequest,
       ResourceRequest request, SchedulerRequestKey schedulerKey,
       QueueMetrics metrics) {
@@ -434,7 +435,11 @@ public class AppSchedulingInfo {
       }
     }
   }
-
+  
+  /**
+   * Update queue metrics and related resource requests. [lxs]
+   * @return The related resource requests which have been updated. [lxs]
+   */
   public List<ResourceRequest> allocate(NodeType type,
       SchedulerNode node, SchedulerRequestKey schedulerKey,
       Container containerAllocated) {
@@ -590,6 +595,9 @@ public class AppSchedulingInfo {
     }
   }
 
+  /**
+   * 更新队列的资源使用情况
+   **/
   private void updateMetricsForAllocatedContainer(NodeType type,
       SchedulerNode node, Container containerAllocated) {
     QueueMetrics metrics = queue.getMetrics();

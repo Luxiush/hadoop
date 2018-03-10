@@ -184,7 +184,10 @@ public class LocalitySchedulingPlacementSet<N extends SchedulerNode>
     }
 
   }
-
+  
+  /**
+   * 获取未处理的请求数量
+   **/
   @Override
   public int getOutstandingAsksCount(String resourceName) {
     try {
@@ -201,6 +204,7 @@ public class LocalitySchedulingPlacementSet<N extends SchedulerNode>
 
   }
 
+  // outstanding: 未完成的, 显著的
   private void decrementOutstanding(SchedulerRequestKey schedulerRequestKey,
       ResourceRequest offSwitchRequest) {
     int numOffSwitchContainers = offSwitchRequest.getNumContainers() - 1;
@@ -270,6 +274,7 @@ public class LocalitySchedulingPlacementSet<N extends SchedulerNode>
   /**
    * The {@link ResourceScheduler} is allocating data-local resources to the
    * application.
+   * <p> See {@link NodeType} for details. [lxs] </p>
    */
   private void allocateNodeLocal(SchedulerRequestKey schedulerKey,
       SchedulerNode node, ResourceRequest nodeLocalRequest,

@@ -34,9 +34,9 @@ import java.util.Map;
  * <p>
  * Comparing to {@link PlacementSet}, this also maintains
  * pending ResourceRequests:
- * - When new ResourceRequest(s) added to scheduler, or,
- * - Or new container allocated, scheduler can notify corresponding
- * PlacementSet.
+ * <p>- When new ResourceRequest(s) added to scheduler, or, </p>
+ * <p>- Or new container allocated, scheduler can notify corresponding
+ * PlacementSet. </p>
  * </p>
  *
  * <p>

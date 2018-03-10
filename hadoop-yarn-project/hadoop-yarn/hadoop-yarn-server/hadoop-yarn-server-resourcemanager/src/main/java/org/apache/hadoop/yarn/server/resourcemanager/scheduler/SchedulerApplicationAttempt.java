@@ -298,6 +298,7 @@ public class SchedulerApplicationAttempt implements SchedulableEntity {
     return appSchedulingInfo.getSchedulerKeys();
   }
 
+  // 获取所请求的container的规格和数量
   public PendingAsk getPendingAsk(
       SchedulerRequestKey schedulerKey, String resourceName) {
     try {
@@ -626,6 +627,9 @@ public class SchedulerApplicationAttempt implements SchedulableEntity {
             ps.showRequests();
           }
         }
+        if(getSchedulerKeys().size() == 0) {
+        	LOG.debug("showRequests: schedulerKeys is empty.");
+        }
       } finally {
         readLock.unlock();
       }
@@ -716,9 +720,11 @@ public class SchedulerApplicationAttempt implements SchedulableEntity {
     }
   }
 
-  // Create container token and update NMToken altogether, if either of them fails for
-  // some reason like DNS unavailable, do not return this container and keep it
-  // in the newlyAllocatedContainers waiting to be refetched.
+  /**
+   * Create container token and update NMToken altogether, if either of them fails for
+   * some reason like DNS unavailable, do not return this container and keep it
+   * in the newlyAllocatedContainers waiting to be refetched.
+   **/
   public List<Container> pullNewlyAllocatedContainers() {
     try {
       writeLock.lock();

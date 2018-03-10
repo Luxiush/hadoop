@@ -31,6 +31,8 @@ import org.apache.hadoop.yarn.util.Records;
  * <p>It is issued by <code>ResourceMananger</code> when <code>ApplicationMaster</code>
  * negotiates resource with <code>ResourceManager</code> and
  * validated on <code>NodeManager</code> side.</p>
+ * <p> Token: 令牌 </p>
+ * <p> RM向AM分配资源的凭据, AM通过此凭据向NM获取资源. </p>
  * @see  AllocateResponse#getNMTokens()
  */
 @Public

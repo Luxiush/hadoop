@@ -27,7 +27,7 @@ import org.apache.hadoop.yarn.api.records.UpdateContainerRequest;
 /**
  * Composite key for outstanding scheduler requests for any schedulable entity.
  * Currently it includes {@link Priority}.
- * 用于区别两个调度请求, [lxs]
+ * 用于区别两个调度请求,
  * 一个SchedulerRequestKey就是一个appAttempt的一次资源请求.
  */
 public final class SchedulerRequestKey implements

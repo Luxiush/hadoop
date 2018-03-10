@@ -305,6 +305,7 @@ public class MockNodes {
         null, null, null, null);
   }
 
+  // hostnum: node id
   private static RMNode buildRMNode(int rack, final Resource perNode,
       NodeState state, String httpAddr, int hostnum, String hostName, int port,
       Set<String> labels, ResourceUtilization containersUtilization,

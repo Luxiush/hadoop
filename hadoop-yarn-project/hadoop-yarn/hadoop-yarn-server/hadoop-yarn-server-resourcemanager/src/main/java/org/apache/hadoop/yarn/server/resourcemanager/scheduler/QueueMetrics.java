@@ -53,6 +53,7 @@ import com.google.common.base.Splitter;
 
 /**
  * 可以看做是树形队列中的一个节点.
+ * 保存子队列的资源使用情况. 
  */
 @InterfaceAudience.Private
 @Metrics(context="yarn")
@@ -430,6 +431,7 @@ public class QueueMetrics implements MetricsSource {
     pendingVCores.decr(res.getVirtualCores() * containers);
   }
 
+  // Aggregation: 集合, 团体
   public void incrNodeTypeAggregations(String user, NodeType type) {
     if (type == NodeType.NODE_LOCAL) {
       aggregateNodeLocalContainersAllocated.incr();

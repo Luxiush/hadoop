@@ -25,12 +25,17 @@ import org.apache.hadoop.yarn.util.resource.Resources;
  * {@link PendingAsk} is the class to include minimal information of how much
  * resource to ask under constraints (e.g. on one host / rack / node-attributes)
  * , etc.
+ *  将ResourceRequest中的Resource和number进行单独封装.
  */
 public class PendingAsk {
   private final Resource perAllocationResource;
   private final int count;
   public final static PendingAsk ZERO = new PendingAsk(Resources.none(), 0);
 
+  /**
+   * Resource: 所请求的资源
+   * num: 资源的数量
+   **/
   public PendingAsk(Resource res, int num) {
     this.perAllocationResource = res;
     this.count = num;

@@ -20,6 +20,15 @@ package org.apache.hadoop.yarn.server.resourcemanager.scheduler;
 
 /**
  * Resource classification.
+ * <p>
+ * NODE_LOCAL, RACK_LOCAL, OFF_SWITCH三种类型的资源请求存在一种范围上的包含关系:
+ * NODE_LOCAL包含于RACK_LOCAL, RACK_LOCAL包含于OFF_SWITCH.
+ * 体现在代码上, 就是, 一个NODE_LOCAL类型的请求必定伴有相应的RACK_LOCAL和OFF_SWITCH类型的请求,
+ * 一个RACK_LOCAL类型的请求也一定伴有相应的OFF_SWITCH类型的请求. </p>
+ * <p>
+ * (在FifoScheduler的assignNodeLocalContainers,assignRackLocalContainer,
+ * assignOffSwitchContainer以及LocalitySchedulingPlacementSet的
+ * allocateNodeLocal,allocateRackLocal,allocateOffSwitch等函数都有体现.) </p>
  */
 public enum NodeType {
   NODE_LOCAL(0), RACK_LOCAL(1), OFF_SWITCH(2);

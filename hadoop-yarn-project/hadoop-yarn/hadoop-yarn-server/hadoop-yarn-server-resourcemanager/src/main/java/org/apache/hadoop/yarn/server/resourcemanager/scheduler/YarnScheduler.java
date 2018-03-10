@@ -131,9 +131,12 @@ public interface YarnScheduler extends EventHandler<SchedulerEvent> {
    * The ApplicationMaster is updating his future resource requirements
    * and may release containers he doens't need.
    * 
+   * <p> AM通过这一接口将资源的使用情况更新到scheduler中对应的appAtempt. 
+   * 同时取走appAttempt中暂存的资源. </p> 
+   * 
    * @param appAttemptId
-   * @param ask
-   * @param release
+   * @param ask	要请求的资源
+   * @param release 将要释放的container
    * @param blacklistAdditions 
    * @param blacklistRemovals 
    * @param updateRequests
