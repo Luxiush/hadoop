@@ -51,18 +51,25 @@ public class FSSchedulerNode extends SchedulerNode {
 
   private static final Log LOG = LogFactory.getLog(FSSchedulerNode.class);
   private FSAppAttempt reservedAppSchedulable;
-  // Stores list of containers still to be preempted
+  /**
+   * Stores list of containers still to be preempted
+   */
   @VisibleForTesting
   final Set<RMContainer> containersForPreemption =
       new ConcurrentSkipListSet<>();
-  // Stores amount of resources preempted and reserved for each app
+  /**
+   * Stores amount of resources preempted and reserved for each app
+	 * </br>从别的地方抢占到预留给对应app的资源
+	 */
   @VisibleForTesting
   final Map<FSAppAttempt, Resource>
       resourcesPreemptedForApp = new LinkedHashMap<>();
   private final Map<ApplicationAttemptId, FSAppAttempt> appIdToAppMap =
       new HashMap<>();
-  // Sum of resourcesPreemptedForApp values, total resources that are
-  // slated for preemption
+  /**
+   * Sum of resourcesPreemptedForApp values, total resources that are
+   * slated for preemption
+   */
   private Resource totalResourcesPreempted = Resource.newInstance(0, 0);
 
   public FSSchedulerNode(RMNode node, boolean usePortForNodeName) {
@@ -148,6 +155,7 @@ public class FSSchedulerNode extends SchedulerNode {
   /**
    * List reserved resources after preemption and assign them to the
    * appropriate applications in a FIFO order.
+   * </br> More: {@link FSSchedulerNode#resourcesPreemptedForApp}
    * @return if any resources were allocated
    */
   @VisibleForTesting
@@ -196,6 +204,7 @@ public class FSSchedulerNode extends SchedulerNode {
    * not considered again. A call to this requires a corresponding call to
    * {@code releaseContainer} to ensure we do not mark a container for
    * preemption and never consider it again and avoid memory leaks.
+   * </br>将containers占有的资源预留给app
    *
    * @param containers container to mark
    */

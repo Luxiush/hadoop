@@ -262,8 +262,8 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
 
   /**
    * Return the level at which we are allowed to schedule containers, given the
-   * current size of the cluster and thresholds indicating how many nodes to
-   * fail at (as a fraction of cluster size) before relaxing scheduling
+   * current size of the cluster and thresholds indicating how many nodes 
+   * (as a fraction(分数) of cluster size) to fail at before relaxing scheduling
    * constraints.
    * @param schedulerKey SchedulerRequestKey
    * @param numNodes Num Nodes
@@ -376,7 +376,7 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
 
       NodeType allowed = allowedLocalityLevel.get(schedulerKey);
 
-      // if level is already most liberal, we're done
+      // if level is already most liberal(自由的), we're done
       if (allowed.equals(NodeType.OFF_SWITCH)) {
         return NodeType.OFF_SWITCH;
       }
@@ -654,7 +654,7 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
   /**
    * Reserve a spot for {@code container} on this {@code node}. If
    * the container is {@code alreadyReserved} on the node, simply
-   * update relevant bookeeping. This dispatches ro relevant handlers
+   * update relevant bookkeeping. This dispatches ro relevant handlers
    * in {@link FSSchedulerNode}..
    * return whether reservation was possible with the current threshold limits
    */
@@ -787,7 +787,7 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
   }
 
   /**
-   * Assign a container to this node to facilitate {@code request}. If node does
+   * Assign a container to this node to facilitate(帮助,促进) {@code request}. If node does
    * not have enough memory, create a reservation. This is called once we are
    * sure the particular request should be facilitated by this node.
    *
@@ -906,6 +906,10 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
     return false;
   }
 
+  /**
+   * 尝试在node上为app的所有ResourceRequest分配container. 
+   * See {@link FSAppAttempt#allowedLocalityLevel} for more information.
+   */
   private Resource assignContainer(FSSchedulerNode node, boolean reserved) {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Node offered to app: " + getName() + " reserved: " + reserved);

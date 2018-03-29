@@ -178,7 +178,9 @@ public class SchedulerApplicationAttempt implements SchedulableEntity {
       missedNonPartitionedReqSchedulingOpportunity =
       ConcurrentHashMultiset.create();
   
-  // Time of the last container scheduled at the current allowed level
+  /** 
+   * Time of the last container scheduled at the current allowed level 
+   */
   protected Map<SchedulerRequestKey, Long> lastScheduledContainer =
       new ConcurrentHashMap<>();
 

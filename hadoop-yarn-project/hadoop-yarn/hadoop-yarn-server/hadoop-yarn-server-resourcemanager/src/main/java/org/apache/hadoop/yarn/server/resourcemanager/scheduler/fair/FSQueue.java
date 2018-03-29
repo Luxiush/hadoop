@@ -55,7 +55,7 @@ public abstract class FSQueue implements Queue, Schedulable {
   private static final Log LOG = LogFactory.getLog(
       FSQueue.class.getName());
 
-  private Resource fairShare = Resources.createResource(0, 0);
+  private Resource fairShare = Resources.createResource(0, 0);		// ???
   private Resource steadyFairShare = Resources.createResource(0, 0);
   private Resource reservedResource = Resources.createResource(0, 0);
   private final String name;
@@ -71,8 +71,8 @@ public abstract class FSQueue implements Queue, Schedulable {
   protected SchedulingPolicy policy = SchedulingPolicy.DEFAULT_POLICY;
 
   protected ResourceWeights weights;
-  protected Resource minShare;
-  private ConfigurableResource maxShare;
+  protected Resource minShare;						// 任何时候队列的可用资源都不能低于minShare
+  private ConfigurableResource maxShare;	// 队列的最大资源使用量
   protected int maxRunningApps;
   private ConfigurableResource maxChildQueueResource;
 

@@ -218,7 +218,8 @@ public class FSParentQueue extends FSQueue {
     readLock.lock();
     try {
       for (FSQueue child : childQueues) {
-        assigned = child.assignContainer(node);
+        assigned = child.assignContainer(node); // 如果child还是ParentQueue则递归, 
+        																				// 如果是LeafQueue则分配Container
         if (!Resources.equals(assigned, Resources.none())) {
           break;
         }

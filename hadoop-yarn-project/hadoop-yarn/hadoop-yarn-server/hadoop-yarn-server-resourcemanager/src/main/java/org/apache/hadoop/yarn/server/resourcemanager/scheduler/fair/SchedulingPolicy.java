@@ -80,7 +80,7 @@ public abstract class SchedulingPolicy {
    * FairSharePolicy, "fifo" for FifoPolicy, or "drf" for
    * DominantResourceFairnessPolicy. For a custom
    * {@link SchedulingPolicy}s in the RM classpath, the policy should be
-   * canonical class name of the {@link SchedulingPolicy}.
+   * canonical(规范的) class name of the {@link SchedulingPolicy}.
    * 
    * @param policy canonical class name or "drf" or "fair" or "fifo"
    * @return a {@link SchedulingPolicy} instance parsed from given policy

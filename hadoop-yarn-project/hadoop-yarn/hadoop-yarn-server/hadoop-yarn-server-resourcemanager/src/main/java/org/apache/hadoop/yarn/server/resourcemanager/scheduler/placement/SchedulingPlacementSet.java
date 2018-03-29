@@ -114,7 +114,8 @@ public interface SchedulingPlacementSet<N extends SchedulerNode> {
   boolean canAllocate(NodeType type, SchedulerNode node);
 
   /**
-   * Can delay to give locality?
+   * Can delay to give locality ?
+   * </br>
    * TODO (wangda): This should be moved out of SchedulingPlacementSet
    * and should belong to specific delay scheduling policy impl.
    *

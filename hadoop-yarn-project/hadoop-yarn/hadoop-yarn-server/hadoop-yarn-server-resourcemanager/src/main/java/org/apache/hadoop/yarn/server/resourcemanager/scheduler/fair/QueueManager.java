@@ -59,6 +59,7 @@ public class QueueManager {
 
   private final Collection<FSLeafQueue> leafQueues = 
       new CopyOnWriteArrayList<FSLeafQueue>();
+  //所有节点的索引
   private final Map<String, FSQueue> queues = new HashMap<String, FSQueue>();
   private FSParentQueue rootQueue;
 
@@ -80,7 +81,7 @@ public class QueueManager {
 
     // Create the default queue
     getLeafQueue(YarnConfiguration.DEFAULT_QUEUE_NAME, true);
-    // Recursively reinitialize to propagate queue properties
+    // Recursively reinitialize to propagate(传播) queue properties
     rootQueue.reinit(true);
   }
 

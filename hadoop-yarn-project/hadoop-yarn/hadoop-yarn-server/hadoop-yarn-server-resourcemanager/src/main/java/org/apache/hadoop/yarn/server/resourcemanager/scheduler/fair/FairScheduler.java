@@ -474,6 +474,7 @@ public class FairScheduler extends
    */
   protected void addApplication(ApplicationId applicationId,
       String queueName, String user, boolean isAppRecovering) {
+  	// queueName 不能为空
     if (queueName == null || queueName.isEmpty()) {
       String message =
           "Reject application " + applicationId + " submitted by user " + user
@@ -484,7 +485,8 @@ public class FairScheduler extends
               message));
       return;
     }
-
+    
+    // queueName 非法
     if (queueName.startsWith(".") || queueName.endsWith(".")) {
       String message =
           "Reject application " + applicationId + " submitted by user " + user
@@ -500,12 +502,13 @@ public class FairScheduler extends
     try {
       writeLock.lock();
       RMApp rmApp = rmContext.getRMApps().get(applicationId);
+      // 设置rmApp所属的队列
       FSLeafQueue queue = assignToQueue(rmApp, queueName, user);
       if (queue == null) {
         return;
       }
 
-      // Enforce ACLs
+      // Enforce ACLs, ACL权限检查
       UserGroupInformation userUgi = UserGroupInformation.createRemoteUser(
           user);
 
@@ -520,6 +523,7 @@ public class FairScheduler extends
         return;
       }
 
+      // 将这条应用信息记录到Scheduler的applications中. The same as FifoScheduler. 
       SchedulerApplication<FSAppAttempt> application =
           new SchedulerApplication<FSAppAttempt>(queue, user);
       applications.put(applicationId, application);
@@ -543,7 +547,8 @@ public class FairScheduler extends
   }
 
   /**
-   * Add a new application attempt to the scheduler.
+   * <p> Add a new application attempt to the scheduler. </p>
+   * <p> 还要区别可执行的和不可执行的app </p>
    */
   protected void addApplicationAttempt(
       ApplicationAttemptId applicationAttemptId,
@@ -1068,7 +1073,7 @@ public class FairScheduler extends
           assignedContainers++;
           Resources.addTo(assignedResource, assignment);
           if (!shouldContinueAssigning(assignedContainers, maxResourcesToAssign,
-              assignedResource)) {
+              assignedResource)) { // 一次nodeUpdate最多只能分配maxResourcesToAssign(一半)
             break;
           }
         }

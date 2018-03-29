@@ -632,11 +632,13 @@ public class AppSchedulingInfo {
 
   /**
    * Can delay to next?.
+   * 根据{@link ResourceRequest#relaxLocality}
+   * 判断该ResourceRequest是否允许调度到resourceName上.
    *
    * @param schedulerKey schedulerKey
    * @param resourceName resourceName
    *
-   * @return If request exists, return {relaxLocality}
+   * @return If request exists, return {@link ResourceRequest#relaxLocality}. 
    *         Otherwise, return true.
    */
   public boolean canDelayTo(
