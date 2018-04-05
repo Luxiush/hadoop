@@ -27,7 +27,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.Schedulable;
 
 /**
  * Contains logic for computing the fair shares. A {@link Schedulable}'s fair
- * share is {@link Resource} it is entitled to, independent of the current
+ * share is {@link Resource} it is entitled(授权) to, independent of the current
  * demands and allocations on the cluster. A {@link Schedulable} whose resource
  * consumption lies at or below its fair share will never have its containers
  * preempted.
@@ -37,8 +37,8 @@ public class ComputeFairShares {
   private static final int COMPUTE_FAIR_SHARES_ITERATIONS = 25;
 
   /**
-   * Compute fair share of the given schedulables.Fair share is an allocation of
-   * shares considering only active schedulables ie schedulables which have
+   * Compute fair share of the given schedulables. Fair share is an allocation of
+   * shares considering only active schedulables, i.e., schedulables which have
    * running apps.
    * 
    * @param schedulables

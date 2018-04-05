@@ -73,7 +73,7 @@ class FSPreemptionThread extends Thread {
     while (!Thread.interrupted()) {
       try {
         FSAppAttempt starvedApp = context.getStarvedApps().take();
-        // Hold the scheduler readlock so this is not concurrent with the
+        // Hold the scheduler readlock so this is not concurrent(并发的) with the
         // update thread.
         schedulerReadLock.lock();
         try {

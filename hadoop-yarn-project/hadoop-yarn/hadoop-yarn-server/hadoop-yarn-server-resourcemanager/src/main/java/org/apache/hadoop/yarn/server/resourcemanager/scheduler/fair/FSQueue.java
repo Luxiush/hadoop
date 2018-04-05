@@ -55,7 +55,18 @@ public abstract class FSQueue implements Queue, Schedulable {
   private static final Log LOG = LogFactory.getLog(
       FSQueue.class.getName());
 
-  private Resource fairShare = Resources.createResource(0, 0);		// ???
+  /** 
+   * Fair share is an allocation of shares considering only active schedulables, 
+   * i.e., schedulables which have running apps. 
+   * {@link ComputeFairShares.computeShares}
+   */
+  private Resource fairShare = Resources.createResource(0, 0);
+  
+  /**
+   * The steady fair share is an allocation of shares considering all queues, 
+   * i.e., active and inactive.
+   * {@link ComputeFairShares.computeSteadyShares}
+   */
   private Resource steadyFairShare = Resources.createResource(0, 0);
   private Resource reservedResource = Resources.createResource(0, 0);
   private final String name;
@@ -71,8 +82,8 @@ public abstract class FSQueue implements Queue, Schedulable {
   protected SchedulingPolicy policy = SchedulingPolicy.DEFAULT_POLICY;
 
   protected ResourceWeights weights;
-  protected Resource minShare;						// 任何时候队列的可用资源都不能低于minShare
-  private ConfigurableResource maxShare;	// 队列的最大资源使用量
+  protected Resource minShare;            // 任何时候队列的可用资源都不能低于minShare
+  private ConfigurableResource maxShare;  // 队列的最大资源使用量
   protected int maxRunningApps;
   private ConfigurableResource maxChildQueueResource;
 
