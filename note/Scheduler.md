@@ -7,8 +7,8 @@
 - 生产性作业: 要求有一定的资源保证. 如 统计值计算, 垃圾数据分析.
 
 根据对硬件资源需求量的不同, 可以分为:
-- CPU密集型, 如 过滤, 统计类作业.
-- I/O密集型, 如 机器学习, 数据挖掘.
+- CPU密集型, 如 过滤, 统计类作业.   (wordcount)
+- I/O密集型, 如 机器学习, 数据挖掘. (sort)
 
 
 ### [资源调度器的基本架构]( http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-resource-manager-resource-manager/ )
@@ -80,7 +80,7 @@ message ResourceRequestProto {
 - 资源公平共享: Fair策略.
 - 资源抢占: 当某个队列中有剩余资源时, 调度器会将空闲的资源共享给其他队列, 在需要时在将其回收.
 - 负载均衡: 基于任务数目的负载均衡机制, 将系统中的任务均匀地分配到各个节点上.
-- 调度策略配置灵活: 允许管理员为每个对流单独设置调度策略(FIFO, Fair(基于最大最小平均算法), DRF).
+- 调度策略配置灵活: 允许管理员为每个队列单独设置调度策略(FIFO, Fair(基于最大最小平均算法), DRF).
 - 提高小应用的相应时间: Fair策略使得小作业可以快速获得资源并完成运行.
 - 配置文件: yarn-site.xml(配置调度器级别的参数), fair-scheduler.xml(配置分各个队列的资源量,权重等信息).
 
@@ -88,7 +88,7 @@ message ResourceRequestProto {
 - [三级资源分配策略](http://jxy.me/2015/04/30/yarn-resource-scheduler/): a)选择(叶子)队列; b)选择应用程序; c)选择container请求.
 ![](./img/three_level_resource_allocate.png)
 
-> 在Fair Scheduler中所有的queue, application都继承了Scheduable, 构成一个树状结构. 分配Container的过程就是深度优先搜索的过程: 从root节点开始, 首先检查当前节点资源是否用满, 是则直接返回(这里会同时考虑CPU和内存). 如果当前节点是ParentQueue, 就将所有子节点排序(SchedulingPolicy决定了这里的顺序), 依次尝试在每个子节点上分配container; 如果当前节点是LeafQueue, 就将下面的app排序(也是SchedulingPolicy决定, 但加入了一些app特有的判断条件), 依次尝试为每个app分配资源; 如果当前节点是app, 会比较当前app的资源需求与节点的剩余资源, 如果能满足, 才真正分配container. 至此整个资源分配过程才完成. 如果找不到合适的app, 最后会返回null.
+> 在Fair Scheduler中所有的queue, application都继承了Scheduable, 构成一个树状结构. 分配Container的过程就是深度优先搜索的过程: 从root节点开始, 首先检查当前节点资源的使用量是否已经达到最大值(maxShare), 是则直接返回(这里会同时考虑CPU和内存). 如果当前节点是ParentQueue, 就将所有子节点排序(SchedulingPolicy决定了这里的顺序), 依次尝试在每个子节点上分配container; 如果当前节点是LeafQueue, 就将下面的app排序(也是SchedulingPolicy决定, 但加入了一些app特有的判断条件), 依次尝试为每个app分配资源; 如果当前节点是app, 会比较当前app的资源需求与节点的剩余资源, 如果能满足, 才真正分配container. 至此整个资源分配过程才完成. 如果找不到合适的app, 最后会返回null.
 
 
 ### 源码阅读引导
