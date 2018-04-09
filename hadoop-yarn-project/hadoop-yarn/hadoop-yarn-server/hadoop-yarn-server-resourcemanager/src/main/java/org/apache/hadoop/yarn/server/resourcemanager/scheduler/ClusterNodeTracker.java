@@ -64,6 +64,9 @@ public class ClusterNodeTracker<N extends SchedulerNode> {
   private Resource configuredMaxAllocation;
   private boolean forceConfiguredMaxAllocation = true;
   private long configuredMaxAllocationWaitTime;
+  
+  /** 保存各个节点的性能指标, 即硬件配置, 为之后给节点分配container提供依据 **/
+  private Map<NodeId, Float> nodePerformance = new HashMap<>();			// Stop here [2018.4.8 17:38]
 
   public void addNode(N node) {
     writeLock.lock();
@@ -82,6 +85,8 @@ public class ClusterNodeTracker<N extends SchedulerNode> {
 
       // Update cluster capacity
       Resources.addTo(clusterCapacity, node.getTotalResource());
+      
+//      updateNodePerformance();
 
       // Update maximumAllocation
       updateMaxResources(node, true);
@@ -175,6 +180,8 @@ public class ClusterNodeTracker<N extends SchedulerNode> {
 
       // Update cluster capacity
       Resources.subtractFrom(clusterCapacity, node.getTotalResource());
+      
+      updateNodePerformance();
 
       // Update maximumAllocation
       updateMaxResources(node, false);
@@ -262,6 +269,38 @@ public class ClusterNodeTracker<N extends SchedulerNode> {
     }
   }
 
+  
+  /** 更新各个节点的性能指标 **/
+  private void updateNodePerformance(){
+  	Float sum = (float) 0.0;
+  	for(Map.Entry<NodeId, N> e : nodes.entrySet()){
+  		NodeId id = e.getKey();
+  		N node = e.getValue();
+  		Float tmp = ((float)node.getTotalResource().getMemorySize()/clusterCapacity.getMemorySize()
+  					+ (float)node.getTotalResource().getVirtualCores()/clusterCapacity.getVirtualCores()
+  					) / 2;
+  		nodePerformance.put(id, tmp);
+  		sum += tmp;
+   	}
+  	
+  	for(Map.Entry<NodeId, Float> e : nodePerformance.entrySet()){
+  		e.setValue(e.getValue()/sum);
+  	}
+  	
+  	StringBuilder message = new StringBuilder("Update node performance: \n"
+  			+ "<<nodeId, nodeTotalResource, PerformanceIndex>> \n");
+  	for(Map.Entry<NodeId, N> e : nodes.entrySet()){
+  		NodeId id = e.getKey();
+  		message.append("<<" + id + ", " + e.getValue().getTotalResource() + ", " 
+  									  + nodePerformance.get(id) + ">>\n");
+  	}
+  	LOG.debug(message);
+  }
+  
+  public float getNodePerformance(NodeId id){
+  	return nodePerformance.get(id);
+  }
+  
   public List<N> getAllNodes() {
     return getNodes(null);
   }

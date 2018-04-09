@@ -183,8 +183,10 @@ public class FairScheduler extends
   // Sleep time for each pass in continuous scheduling
   protected volatile int continuousSchedulingSleepMs;
   // Node available resource comparator
-  private Comparator<FSSchedulerNode> nodeAvailableResourceComparator =
-          new NodeAvailableResourceComparator();
+   private Comparator<FSSchedulerNode> nodeAvailableResourceComparator =
+           new NodeAvailableResourceComparator();
+//  private Comparator<FSSchedulerNode> nodePerformanceComparator =
+//  				new NodePerformanceComparator();
   protected double nodeLocalityThreshold; // Cluster threshold for node locality
   protected double rackLocalityThreshold; // Cluster threshold for rack locality
   protected long nodeLocalityDelayMs; // Delay for node locality
@@ -949,6 +951,8 @@ public class FairScheduler extends
     // unallocated resources
     synchronized (this) {
       nodeIdList = nodeTracker.sortedNodeList(nodeAvailableResourceComparator);
+      // nodeIdList = nodeTracker.sortedNodeList(nodePerformanceComparator);
+    
     }
 
     // iterate all nodes
@@ -986,6 +990,27 @@ public class FairScheduler extends
           n1.getUnallocatedResource());
     }
   }
+  
+  /** 根据节点资源使用率排序 **/
+  private class NodePerformanceComparator
+		  implements Comparator<FSSchedulerNode> {
+		
+		@Override
+		public int compare(FSSchedulerNode n1, FSSchedulerNode n2) {
+			Resource clusterResource = getClusterResource();
+			float ratio1 = RESOURCE_CALCULATOR.divide(clusterResource, 
+					n1.getUnallocatedResource(), n1.getTotalResource());
+			ratio1 *= nodeTracker.getNodePerformance(n1.getNodeID());
+			
+			float ratio2 = RESOURCE_CALCULATOR.divide(clusterResource, 
+					n2.getUnallocatedResource(), n2.getTotalResource());
+			ratio2 *= nodeTracker.getNodePerformance(n2.getNodeID());
+			
+			if(ratio2<ratio1) return -1;
+			else if(ratio2>ratio1) return 1;
+			return 0;
+		}
+	}
 
   private boolean shouldContinueAssigning(int containers,
       Resource maxResourcesToAssign, Resource assignedResource) {

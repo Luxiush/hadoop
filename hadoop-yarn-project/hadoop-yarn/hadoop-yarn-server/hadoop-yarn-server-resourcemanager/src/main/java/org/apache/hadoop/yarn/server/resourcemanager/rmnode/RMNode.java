@@ -31,6 +31,7 @@ import org.apache.hadoop.yarn.api.records.NodeState;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.ResourceUtilization;
 import org.apache.hadoop.yarn.server.api.protocolrecords.NodeHeartbeatResponse;
+import org.apache.hadoop.yarn.server.api.records.NodeLoadingStatus;
 import org.apache.hadoop.yarn.server.api.records.OpportunisticContainersStatus;
 
 /**
@@ -88,6 +89,16 @@ public interface RMNode {
    * @return the time of the latest health report received from this node.
    */
   public long getLastHealthReportTime();
+  
+  /**
+   * 获取节点负载信息
+   */
+  public NodeLoadingStatus getNodeLoadingStatus();
+  
+  /**
+   * 更新节点负载信息
+   */
+  public void updateNodeLoadingStatus(NodeLoadingStatus loadingStatus);
 
   /**
    * the node manager version of the node received as part of the

@@ -39,15 +39,21 @@ import org.apache.hadoop.yarn.proto.YarnProtos.ContainerStatusProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.ContainerProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.NodeIdProto;
 import org.apache.hadoop.yarn.proto.YarnServerCommonProtos.NodeHealthStatusProto;
+import org.apache.hadoop.yarn.proto.YarnServerCommonProtos.NodeLoadingStatusProto;
 import org.apache.hadoop.yarn.proto.YarnServerCommonProtos.NodeStatusProto;
 import org.apache.hadoop.yarn.proto.YarnServerCommonProtos.NodeStatusProtoOrBuilder;
 import org.apache.hadoop.yarn.proto.YarnServerCommonProtos.OpportunisticContainersStatusProto;
 
 import org.apache.hadoop.yarn.server.api.records.OpportunisticContainersStatus;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.yarn.server.api.records.NodeHealthStatus;
+import org.apache.hadoop.yarn.server.api.records.NodeLoadingStatus;
 import org.apache.hadoop.yarn.server.api.records.NodeStatus;
 
 public class NodeStatusPBImpl extends NodeStatus {
+	private static final Log LOG = LogFactory.getLog(NodeStatusPBImpl.class);
+
   NodeStatusProto proto = NodeStatusProto.getDefaultInstance();
   NodeStatusProto.Builder builder = null;
   boolean viaProto = false;
@@ -55,6 +61,7 @@ public class NodeStatusPBImpl extends NodeStatus {
   private NodeId nodeId = null;
   private List<ContainerStatus> containers = null;
   private NodeHealthStatus nodeHealthStatus = null;
+  private NodeLoadingStatus nodeLoadingStatus = null;
   private List<ApplicationId> keepAliveApplications = null;
   private List<Container> increasedContainers = null;
 
@@ -83,6 +90,9 @@ public class NodeStatusPBImpl extends NodeStatus {
     }
     if (this.nodeHealthStatus != null) {
       builder.setNodeHealthStatus(convertToProtoFormat(this.nodeHealthStatus));
+    }
+    if (this.nodeLoadingStatus != null){
+    	builder.setNodeLoadingStatus(convertToProtoFormat(this.nodeLoadingStatus));
     }
     if (this.keepAliveApplications != null) {
       addKeepAliveApplicationsToProto();
@@ -333,6 +343,31 @@ public class NodeStatusPBImpl extends NodeStatus {
     }
     this.nodeHealthStatus = healthStatus;
   }
+  
+  @Override
+  public synchronized NodeLoadingStatus getNodeLoadingStatus(){  	
+  	NodeStatusProtoOrBuilder p = viaProto ? proto : builder;
+    if (nodeLoadingStatus != null) {
+      return nodeLoadingStatus;
+    }
+    if (!p.hasNodeLoadingStatus()) {
+      return null;
+    }
+    nodeLoadingStatus = convertFromProtoFormat(p.getNodeLoadingStatus());
+  	return nodeLoadingStatus;
+  	
+  }
+  
+  @Override 
+  public synchronized void updateNodeLoadingStatus(){
+  	if (this.nodeLoadingStatus == null){
+  		this.nodeLoadingStatus = new NodeLoadingStatusPBImpl();
+  	}
+  	else{
+  		this.nodeLoadingStatus.update();
+  	}
+  	LOG.info("Node loading status after update: <<"+this.nodeLoadingStatus.toString()+">>");
+  }
 
   @Override
   public synchronized ResourceUtilization getContainersUtilization() {
@@ -437,9 +472,17 @@ public class NodeStatusPBImpl extends NodeStatus {
       NodeHealthStatus healthStatus) {
     return ((NodeHealthStatusPBImpl) healthStatus).getProto();
   }
+  private NodeLoadingStatusProto convertToProtoFormat(
+      NodeLoadingStatus healthStatus) {
+    return ((NodeLoadingStatusPBImpl) healthStatus).getProto();
+  }
 
   private NodeHealthStatus convertFromProtoFormat(NodeHealthStatusProto proto) {
     return new NodeHealthStatusPBImpl(proto);
+  }
+  
+  private NodeLoadingStatus convertFromProtoFormat(NodeLoadingStatusProto proto){
+  	return new NodeLoadingStatusPBImpl(proto);
   }
 
   private ContainerStatusPBImpl convertFromProtoFormat(ContainerStatusProto c) {

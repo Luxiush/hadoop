@@ -84,6 +84,9 @@ public abstract class NodeStatus {
   
   public abstract NodeHealthStatus getNodeHealthStatus();
   public abstract void setNodeHealthStatus(NodeHealthStatus healthStatus);
+  
+  public abstract NodeLoadingStatus getNodeLoadingStatus();
+  public abstract void updateNodeLoadingStatus();
 
   public abstract void setNodeId(NodeId nodeId);
   public abstract void setResponseId(int responseId);

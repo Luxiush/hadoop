@@ -38,6 +38,7 @@ import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.ResourceUtilization;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.nodelabels.CommonNodeLabelsManager;
+import org.apache.hadoop.yarn.server.api.records.NodeLoadingStatus;
 import org.apache.hadoop.yarn.server.resourcemanager.nodelabels.RMNodeLabelsManager;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainer;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainerState;
@@ -459,6 +460,13 @@ public abstract class SchedulerNode {
    */
   public ResourceUtilization getNodeUtilization() {
     return this.nodeUtilization;
+  }
+  
+  /**
+   * 获取节点的负载信息
+   */
+  public NodeLoadingStatus getNodeLoadingStatus(){
+  	return this.rmNode.getNodeLoadingStatus();
   }
 
 

@@ -64,6 +64,7 @@ import org.apache.hadoop.yarn.server.api.protocolrecords.NMContainerStatus;
 import org.apache.hadoop.yarn.server.api.protocolrecords.NodeHeartbeatResponse;
 import org.apache.hadoop.yarn.server.api.records.OpportunisticContainersStatus;
 import org.apache.hadoop.yarn.server.api.records.NodeHealthStatus;
+import org.apache.hadoop.yarn.server.api.records.NodeLoadingStatus;
 import org.apache.hadoop.yarn.server.resourcemanager.ClusterMetrics;
 import org.apache.hadoop.yarn.server.resourcemanager.NodesListManagerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.NodesListManagerEventType;
@@ -125,6 +126,7 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
 
   private String healthReport;
   private long lastHealthReportTime;
+  private NodeLoadingStatus loadingStatus;
   private String nodeManagerVersion;
   private Integer decommissioningTimeout;
 
@@ -482,6 +484,17 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
     } finally {
       this.writeLock.unlock();
     }
+  }
+  
+  @Override
+  public NodeLoadingStatus getNodeLoadingStatus(){
+  	return this.loadingStatus;
+  }
+  
+  @Override
+  public void updateNodeLoadingStatus(NodeLoadingStatus loadingStatus){
+  	LOG.info("updating loading status: <<"+this.loadingStatus.toString()+">> => <<"+loadingStatus.toString()+">>");
+  	this.loadingStatus = loadingStatus;
   }
   
   @Override

@@ -77,6 +77,7 @@ import org.apache.hadoop.yarn.server.api.records.OpportunisticContainersStatus;
 import org.apache.hadoop.yarn.server.api.records.MasterKey;
 import org.apache.hadoop.yarn.server.api.records.NodeAction;
 import org.apache.hadoop.yarn.server.api.records.NodeHealthStatus;
+import org.apache.hadoop.yarn.server.api.records.NodeLoadingStatus;
 import org.apache.hadoop.yarn.server.api.records.NodeStatus;
 import org.apache.hadoop.yarn.server.nodemanager.NodeManager.NMContext;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.application.Application;
@@ -478,6 +479,9 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
 
     nodeStatus.setOpportunisticContainersStatus(
         getOpportunisticContainersStatus());
+    
+    nodeStatus.updateNodeLoadingStatus();
+    
     return nodeStatus;
   }
 
