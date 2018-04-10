@@ -31,8 +31,6 @@ public class FSContext {
   private FSStarvedApps starvedApps;
   private final FairScheduler scheduler;
   
-  private MonitorInfo monitorInfo;
-
   FSContext(FairScheduler scheduler) {
     this.scheduler = scheduler;
   }
@@ -63,13 +61,5 @@ public class FSContext {
 
   public Resource getClusterResource() {
     return scheduler.getClusterResource();
-  }
-  
-  public void setMonitorInfor(MonitorInfo info){
-  	this.monitorInfo = info;
-  }
-  
-  public MonitorInfo getMonitorInfo(){
-  	return this.monitorInfo;
   }
 }
