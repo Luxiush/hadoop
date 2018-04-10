@@ -44,6 +44,7 @@ import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.SysInfo;
 import org.apache.hadoop.util.VersionUtil;
 import org.apache.hadoop.yarn.api.protocolrecords.SignalContainerRequest;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -74,6 +75,7 @@ import org.apache.hadoop.yarn.server.api.protocolrecords.UnRegisterNodeManagerRe
 import org.apache.hadoop.yarn.server.api.records.AppCollectorData;
 import org.apache.hadoop.yarn.server.api.records.ContainerQueuingLimit;
 import org.apache.hadoop.yarn.server.api.records.OpportunisticContainersStatus;
+import org.apache.hadoop.yarn.server.api.records.impl.pb.NodeLoadingStatusPBImpl;
 import org.apache.hadoop.yarn.server.api.records.MasterKey;
 import org.apache.hadoop.yarn.server.api.records.NodeAction;
 import org.apache.hadoop.yarn.server.api.records.NodeHealthStatus;
@@ -141,6 +143,7 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
 
   private final NodeHealthCheckerService healthChecker;
   private final NodeManagerMetrics metrics;
+  private final SysInfo sysInfo = SysInfo.newInstance();
 
   private Runnable statusUpdaterRunnable;
   private Thread  statusUpdater;
@@ -467,6 +470,9 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
       LOG.debug("Node's health-status : " + nodeHealthStatus.getIsNodeHealthy()
           + ", " + nodeHealthStatus.getHealthReport());
     }
+    
+    NodeLoadingStatus nodeLoadingStatus = NodeLoadingStatus.newInstance(sysInfo);
+
     List<ContainerStatus> containersStatuses = getContainerStatuses();
     ResourceUtilization containersUtilization = getContainersUtilization();
     ResourceUtilization nodeUtilization = getNodeUtilization();
@@ -474,14 +480,12 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
         = getIncreasedContainers();
     NodeStatus nodeStatus =
         NodeStatus.newInstance(nodeId, responseId, containersStatuses,
-          createKeepAliveApplicationList(), nodeHealthStatus,
+          createKeepAliveApplicationList(), nodeHealthStatus, nodeLoadingStatus, 
           containersUtilization, nodeUtilization, increasedContainers);
 
     nodeStatus.setOpportunisticContainersStatus(
         getOpportunisticContainersStatus());
-    
-    nodeStatus.updateNodeLoadingStatus();
-    
+        
     return nodeStatus;
   }
 

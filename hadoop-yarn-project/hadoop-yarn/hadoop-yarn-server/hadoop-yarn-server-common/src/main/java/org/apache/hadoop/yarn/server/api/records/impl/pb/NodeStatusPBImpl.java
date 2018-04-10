@@ -359,14 +359,12 @@ public class NodeStatusPBImpl extends NodeStatus {
   }
   
   @Override 
-  public synchronized void updateNodeLoadingStatus(){
-  	if (this.nodeLoadingStatus == null){
-  		this.nodeLoadingStatus = new NodeLoadingStatusPBImpl();
-  	}
-  	else{
-  		this.nodeLoadingStatus.update();
-  	}
-  	LOG.info("Node loading status after update: <<"+this.nodeLoadingStatus.toString()+">>");
+  public synchronized void setNodeLoadingStatus(NodeLoadingStatus loadingStatus){
+  	maybeInitBuilder();
+    if (loadingStatus == null) {
+      builder.clearNodeLoadingStatus();
+    }
+  	this.nodeLoadingStatus = loadingStatus;
   }
 
   @Override

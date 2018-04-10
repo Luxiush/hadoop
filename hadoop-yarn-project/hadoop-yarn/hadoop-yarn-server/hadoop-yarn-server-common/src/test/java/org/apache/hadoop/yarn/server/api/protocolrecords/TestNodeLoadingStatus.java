@@ -2,6 +2,7 @@
 
 package org.apache.hadoop.yarn.server.api.protocolrecords;
 
+import org.apache.hadoop.util.SysInfo;
 import org.apache.hadoop.yarn.server.api.records.NodeLoadingStatus;
 import org.apache.hadoop.yarn.server.api.records.impl.pb.NodeLoadingStatusPBImpl;
 import org.junit.Test;
@@ -12,8 +13,10 @@ import org.apache.commons.logging.LogFactory;
 
 public class TestNodeLoadingStatus{
 	private static final Log LOG = LogFactory.getLog(TestNodeLoadingStatus.class);
+
+	private static SysInfo sysInfo = SysInfo.newInstance();
 	
-	@Test
+//	@Test
 	public void testConstructor(){
 		/**
 		LOG.info("new instance......");
@@ -49,4 +52,19 @@ public class TestNodeLoadingStatus{
 		}
 	}
 	
+	
+	@Test
+	public void testHeartbeat(){
+		for(int i=0; i<10; i++){
+			LOG.info("\n-----i:"+i+"------");
+			NodeLoadingStatus S = NodeLoadingStatus.newInstance(sysInfo);
+			
+			try {
+	      // Sleep so we can compute the CPU usage
+	      Thread.sleep(1000L);
+	    } catch (InterruptedException e) {
+	      // do nothing
+	    }
+		}
+	}
 }

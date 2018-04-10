@@ -382,6 +382,7 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
     this.httpAddress = hostName + ":" + httpPort;
     this.node = node;
     this.healthReport = "Healthy";
+    this.loadingStatus = NodeLoadingStatus.newInstance();
     this.lastHealthReportTime = System.currentTimeMillis();
     this.nodeManagerVersion = nodeManagerVersion;
     this.timeStamp = 0;
@@ -493,7 +494,14 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
   
   @Override
   public void updateNodeLoadingStatus(NodeLoadingStatus loadingStatus){
-  	LOG.info("updating loading status: <<"+this.loadingStatus.toString()+">> => <<"+loadingStatus.toString()+">>");
+  	float memUsageDiff = loadingStatus.getMemoryUsagePercentage()
+  											- this.loadingStatus.getMemoryUsagePercentage();
+  	float cpuUsageDiff = loadingStatus.getCpuUsagePercentage()
+  											- this.loadingStatus.getCpuUsagePercentage();
+  	// 假设内存为1G, 那么, 0.0001%G约为1k
+  	if(Math.abs(memUsageDiff)<0.0001 && Math.abs(cpuUsageDiff)<0.01) return ;
+  	LOG.info("\nUpdating loading status: \n<<"+this.loadingStatus.toString()+
+  				   ">>\n=>\n<<"+loadingStatus.toString()+">>\n");
   	this.loadingStatus = loadingStatus;
   }
   

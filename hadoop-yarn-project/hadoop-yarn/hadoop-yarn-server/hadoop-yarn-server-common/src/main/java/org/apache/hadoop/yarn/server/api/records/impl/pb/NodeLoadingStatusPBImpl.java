@@ -14,17 +14,14 @@ import org.apache.commons.logging.LogFactory;
 public class NodeLoadingStatusPBImpl extends NodeLoadingStatus{
 	private static final Log LOG = LogFactory.getLog(NodeLoadingStatusPBImpl.class);
 
-	private static SysInfo sysInfo = SysInfo.newInstance();
 	private NodeLoadingStatusProto.Builder builder;
 	
-	public NodeLoadingStatusPBImpl(){
+	public NodeLoadingStatusPBImpl() {	
 		this.builder = NodeLoadingStatusProto.newBuilder();
-		update();
 	}
 
 	public NodeLoadingStatusPBImpl(NodeLoadingStatusProto proto) {
 		this.builder = NodeLoadingStatusProto.newBuilder(proto);
-		update();
 	}
 	
 	public NodeLoadingStatusProto getProto(){
@@ -32,7 +29,7 @@ public class NodeLoadingStatusPBImpl extends NodeLoadingStatus{
 	}
 
 	@Override
-	public void update() {	
+	public void init(SysInfo sysInfo) {	
 		float cpuUsage = sysInfo.getCpuUsagePercentage();		
 		long memSize = sysInfo.getPhysicalMemorySize();
 		long memUsage = memSize-sysInfo.getAvailablePhysicalMemorySize();
@@ -41,15 +38,14 @@ public class NodeLoadingStatusPBImpl extends NodeLoadingStatus{
 		this.builder.setCpuUsagePercentage(cpuUsage);
 		this.builder.setNumProcessors(sysInfo.getNumProcessors());
 		this.builder.setCpuFrequency(sysInfo.getCpuFrequency());
-
 		
-		StringBuilder logMessage = new StringBuilder("");
-		logMessage.append("memSize: "+memSize)
-		.append(",\ncpuFrequency: "+sysInfo.getCpuFrequency())
-		.append(",\nnumProcessor: "+sysInfo.getNumProcessors())
-		.append(",\nmemUsage: "+memUsage)
-		.append(",\ncpuUsage: "+cpuUsage);
-		LOG.info("\nsysInfo: <<<\n"+logMessage.toString()+"\n>>>");
+		if(Math.abs(this.builder.getCpuUsagePercentage())<0.001F){
+			LOG.info("\nLow cpu usage: <<builder.getCpuUsagePercentage: "
+								+ this.builder.getCpuUsagePercentage()
+								+ ", sysInfo.getCpuUsagePercentage: " + cpuUsage
+								+ ">>\n");
+		}
+  	LOG.info("\nCurrent node loading status: <<"+toString()+">>\n");
 	}
 
 	@Override
