@@ -47,6 +47,7 @@ public class AggregateWordCount {
       String countType = LONG_VALUE_SUM;
       ArrayList<Entry<Text, Text>> retv = new ArrayList<Entry<Text, Text>>();
       String line = val.toString();
+      // TODO 改用正则来分词
       StringTokenizer itr = new StringTokenizer(line);
       while (itr.hasMoreTokens()) {
         Entry<Text, Text> e = generateEntry(countType, itr.nextToken(), ONE);

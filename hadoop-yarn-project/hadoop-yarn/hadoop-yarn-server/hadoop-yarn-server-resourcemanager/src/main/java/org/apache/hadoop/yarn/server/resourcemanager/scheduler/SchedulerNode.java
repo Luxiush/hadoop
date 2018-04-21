@@ -145,6 +145,14 @@ public abstract class SchedulerNode {
   public String getRackName() {
     return this.rmNode.getRackName();
   }
+  
+  /**
+   * 获取节点的负载权重, 用于节点排序.
+   */
+  public float getLoadingWeight(){  	
+  	// TODO: should be override
+  	return 0.0f;
+  }
 
   /**
    * The Scheduler has allocated containers on this node to the given
@@ -203,6 +211,20 @@ public abstract class SchedulerNode {
    */
   public synchronized Resource getTotalResource() {
     return this.totalResource;
+  }
+  
+  /**
+   * 获取节点的硬件信息
+   */
+  public synchronized Resource getTotalPhysicalResource(){
+  	long mem = rmNode.getNodeLoadingStatus().getPhysialMemorySize();
+  	int cores = rmNode.getNodeLoadingStatus().getNumProcessors();
+  	float cpuFrequency = (float)(rmNode.getNodeLoadingStatus()
+  																.getCpuFrequency() >> 20) ; //kHz => GHz
+  	cores = cores * (int)Math.floor(cpuFrequency / 0.5f);		// 0.5G对应一个虚拟cpu
+  	LOG.info("getTotalPhysicalResource, " + getRMNode().getNodeAddress()
+  			+ ", mem:"+mem+", cores:"+cores+", cpuFrequency:"+cpuFrequency);
+  	return Resource.newInstance(mem, cores);
   }
 
   /**

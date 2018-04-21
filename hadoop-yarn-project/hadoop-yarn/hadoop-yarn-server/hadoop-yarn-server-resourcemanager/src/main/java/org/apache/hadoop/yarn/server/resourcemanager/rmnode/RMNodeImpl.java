@@ -500,8 +500,12 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
   											- this.loadingStatus.getCpuUsagePercentage();
   	// 假设内存为1G, 那么, 0.0001%G约为1k
   	if(Math.abs(memUsageDiff)<0.0001 && Math.abs(cpuUsageDiff)<0.01) return ;
-  	LOG.info("\nUpdating loading status: \n<<"+this.loadingStatus.toString()+
-  				   ">>\n=>\n<<"+loadingStatus.toString()+">>\n");
+  	// LOG.info("\nUpdating loading status: \n<<"+this.loadingStatus.toString()+
+  	// 			   ">>\n=>\n<<"+loadingStatus.toString()+">>\n");
+  	// 与FSchedulerNode.getLoadingWeight的计算方式一致
+  	float load = (loadingStatus.getMemoryUsagePercentage() 
+  			+ loadingStatus.getCpuUsagePercentage()) /2;
+  	LOG.info("<<Load: "+this.getHostName()+", "+load+">>\n");
   	this.loadingStatus = loadingStatus;
   }
   

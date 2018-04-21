@@ -581,7 +581,7 @@ public class ResourceTrackerService extends AbstractService implements
     this.rmContext.getDispatcher().getEventHandler().handle(nodeStatusEvent);
     
     // 更新节点负载信息
-    LOG.info("\nNode heartbeat from <<"+nodeId.toString()+">>");
+    // LOG.info("\nNode heartbeat from <<"+nodeId.toString()+">>");
     rmNode.updateNodeLoadingStatus(remoteNodeStatus.getNodeLoadingStatus());
 
     // 5. Update node's labels to RM's NodeLabelManager.

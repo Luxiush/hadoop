@@ -951,7 +951,7 @@ public class FairScheduler extends
     // unallocated resources
     synchronized (this) {
       nodeIdList = nodeTracker.sortedNodeList(nodeAvailableResourceComparator);
-      // nodeIdList = nodeTracker.sortedNodeList(nodePerformanceComparator);
+      // nodeIdList = nodeTracker.sortedNodeList(NodeLoadingComparator);
     
     }
 
@@ -991,20 +991,21 @@ public class FairScheduler extends
     }
   }
   
-  /** 根据节点资源使用率排序 **/
-  private class NodePerformanceComparator
+  /** 根据节点负载排序 **/
+  private class NodeLoadingComparator
 		  implements Comparator<FSSchedulerNode> {
 		
 		@Override
 		public int compare(FSSchedulerNode n1, FSSchedulerNode n2) {
-			Resource clusterResource = getClusterResource();
-			float ratio1 = RESOURCE_CALCULATOR.divide(clusterResource, 
-					n1.getUnallocatedResource(), n1.getTotalResource());
-			ratio1 *= nodeTracker.getNodePerformance(n1.getNodeID());
+			float ratio1 = (float)n1.getUnallocatedResource().getMemorySize() 
+												/ n1.getTotalResource().getMemorySize();
+			ratio1 *= (nodeTracker.getNodeStaticPerformance(n1.getNodeID())
+										/ n1.getLoadingWeight());
 			
-			float ratio2 = RESOURCE_CALCULATOR.divide(clusterResource, 
-					n2.getUnallocatedResource(), n2.getTotalResource());
-			ratio2 *= nodeTracker.getNodePerformance(n2.getNodeID());
+			float ratio2 = (float)n2.getUnallocatedResource().getMemorySize() 
+					/ n2.getTotalResource().getMemorySize();
+			ratio2 *= (nodeTracker.getNodeStaticPerformance(n2.getNodeID())
+									 / n2.getLoadingWeight());
 			
 			if(ratio2<ratio1) return -1;
 			else if(ratio2>ratio1) return 1;

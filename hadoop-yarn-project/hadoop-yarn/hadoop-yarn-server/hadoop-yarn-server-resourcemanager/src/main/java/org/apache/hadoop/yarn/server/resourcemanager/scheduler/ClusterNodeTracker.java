@@ -56,7 +56,7 @@ public class ClusterNodeTracker<N extends SchedulerNode> {
   private Map<String, List<N>> nodesPerRack = new HashMap<>();
 
   private Resource clusterCapacity = Resources.clone(Resources.none());
-  private Resource staleClusterCapacity = null;
+  private Resource staleClusterCapacity = null;		// stale: 陈旧的
 
   // Max allocation
   private long maxNodeMemory = -1;
@@ -65,12 +65,15 @@ public class ClusterNodeTracker<N extends SchedulerNode> {
   private boolean forceConfiguredMaxAllocation = true;
   private long configuredMaxAllocationWaitTime;
   
+  /** 保存集群的真实硬件配置信息, 0.5G为1个vCores **/
+  private Resource clusterPhysicalCapacity = Resources.clone(Resources.none());	
   /** 保存各个节点的性能指标, 即硬件配置, 为之后给节点分配container提供依据 **/
-  private Map<NodeId, Float> nodePerformance = new HashMap<>();			// Stop here [2018.4.8 17:38]
+  private Map<NodeId, Float> nodeStaticPerformance = new HashMap<>();
 
   public void addNode(N node) {
     writeLock.lock();
     try {
+    	LOG.info("Adding node " + node.getRMNode().getNodeAddress() + "......");
       nodes.put(node.getNodeID(), node);
       nodeNameToNodeMap.put(node.getNodeName(), node);
 
@@ -86,7 +89,9 @@ public class ClusterNodeTracker<N extends SchedulerNode> {
       // Update cluster capacity
       Resources.addTo(clusterCapacity, node.getTotalResource());
       
-//      updateNodePerformance();
+      Resources.addTo(clusterPhysicalCapacity, ((SchedulerNode)node).getTotalPhysicalResource());
+      LOG.info("clusterPhysicalCapacity: "+clusterPhysicalCapacity);
+      updateNodeStaticPerformance();
 
       // Update maximumAllocation
       updateMaxResources(node, true);
@@ -181,7 +186,8 @@ public class ClusterNodeTracker<N extends SchedulerNode> {
       // Update cluster capacity
       Resources.subtractFrom(clusterCapacity, node.getTotalResource());
       
-      updateNodePerformance();
+      Resources.subtractFrom(clusterPhysicalCapacity, node.getTotalPhysicalResource());
+      updateNodeStaticPerformance();
 
       // Update maximumAllocation
       updateMaxResources(node, false);
@@ -271,19 +277,22 @@ public class ClusterNodeTracker<N extends SchedulerNode> {
 
   
   /** 更新各个节点的性能指标 **/
-  private void updateNodePerformance(){
-  	Float sum = (float) 0.0;
+  private void updateNodeStaticPerformance(){
+  	Float sum = 0.0f;
   	for(Map.Entry<NodeId, N> e : nodes.entrySet()){
   		NodeId id = e.getKey();
   		N node = e.getValue();
-  		Float tmp = ((float)node.getTotalResource().getMemorySize()/clusterCapacity.getMemorySize()
-  					+ (float)node.getTotalResource().getVirtualCores()/clusterCapacity.getVirtualCores()
-  					) / 2;
-  		nodePerformance.put(id, tmp);
+  		Float tmp = ((float)node.getTotalPhysicalResource().getMemorySize()
+  										/ clusterPhysicalCapacity.getMemorySize()
+  					       + (float)node.getTotalPhysicalResource().getVirtualCores()
+  					          / clusterPhysicalCapacity.getVirtualCores()
+  								) / 2;
+  		nodeStaticPerformance.put(id, tmp);
   		sum += tmp;
    	}
   	
-  	for(Map.Entry<NodeId, Float> e : nodePerformance.entrySet()){
+  	// 归一化
+  	for(Map.Entry<NodeId, Float> e : nodeStaticPerformance.entrySet()){
   		e.setValue(e.getValue()/sum);
   	}
   	
@@ -291,14 +300,14 @@ public class ClusterNodeTracker<N extends SchedulerNode> {
   			+ "<<nodeId, nodeTotalResource, PerformanceIndex>> \n");
   	for(Map.Entry<NodeId, N> e : nodes.entrySet()){
   		NodeId id = e.getKey();
-  		message.append("<<" + id + ", " + e.getValue().getTotalResource() + ", " 
-  									  + nodePerformance.get(id) + ">>\n");
+  		message.append("<<" + id + ", " + e.getValue().getTotalPhysicalResource() + ", " 
+  									  + nodeStaticPerformance.get(id) + ">>\n");
   	}
-  	LOG.debug(message);
+  	LOG.info(message);
   }
   
-  public float getNodePerformance(NodeId id){
-  	return nodePerformance.get(id);
+  public float getNodeStaticPerformance(NodeId id){
+  	return nodeStaticPerformance.get(id);
   }
   
   public List<N> getAllNodes() {

@@ -34,18 +34,12 @@ public class NodeLoadingStatusPBImpl extends NodeLoadingStatus{
 		long memSize = sysInfo.getPhysicalMemorySize();
 		long memUsage = memSize-sysInfo.getAvailablePhysicalMemorySize();
 		this.builder.setPhysicalMemorySize(memSize);
-		this.builder.setMemoryUsagePercentage((float)memUsage / memSize * 100F);
+		this.builder.setMemoryUsagePercentage((float)memUsage / memSize);
 		this.builder.setCpuUsagePercentage(cpuUsage);
 		this.builder.setNumProcessors(sysInfo.getNumProcessors());
 		this.builder.setCpuFrequency(sysInfo.getCpuFrequency());
 		
-		if(Math.abs(this.builder.getCpuUsagePercentage())<0.001F){
-			LOG.info("\nLow cpu usage: <<builder.getCpuUsagePercentage: "
-								+ this.builder.getCpuUsagePercentage()
-								+ ", sysInfo.getCpuUsagePercentage: " + cpuUsage
-								+ ">>\n");
-		}
-  	LOG.info("\nCurrent node loading status: <<"+toString()+">>\n");
+  	// LOG.info("\nCurrent node loading status: <<"+toString()+">>\n");
 	}
 
 	@Override

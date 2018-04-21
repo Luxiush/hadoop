@@ -84,6 +84,7 @@ public class SysInfoLinux extends SysInfo {
    * Pattern for parsing /proc/stat.
    */
   private static final String PROCFS_STAT = "/proc/stat";
+  // cpu [userTime niceTime systemTime] ......
   private static final Pattern CPU_TIME_FORMAT =
       Pattern.compile("^cpu[ \t]*([0-9]*)" +
                       "[ \t]*([0-9]*)[ \t]*([0-9]*)[ \t].*");

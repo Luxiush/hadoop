@@ -45,7 +45,7 @@ public class TestNodeLoadingStatus{
 			
 			try {
 	      // Sleep so we can compute the CPU usage
-	      Thread.sleep(2000L);
+          Thread.sleep(2000L);
 	    } catch (InterruptedException e) {
 	      // do nothing
 	    }
@@ -55,13 +55,14 @@ public class TestNodeLoadingStatus{
 	
 	@Test
 	public void testHeartbeat(){
-		for(int i=0; i<10; i++){
+		for(int i=0; i<20; i++){
 			LOG.info("\n-----i:"+i+"------");
 			NodeLoadingStatus S = NodeLoadingStatus.newInstance(sysInfo);
 			
 			try {
 	      // Sleep so we can compute the CPU usage
-	      Thread.sleep(1000L);
+				if(i<10) Thread.sleep(98L); //没猜错的话最小间隔是100, 然并卵
+				else Thread.sleep(102L);
 	    } catch (InterruptedException e) {
 	      // do nothing
 	    }

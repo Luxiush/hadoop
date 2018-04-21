@@ -290,4 +290,19 @@ public class FSSchedulerNode extends SchedulerNode {
       containersForPreemption.remove(container);
     }
   }
+  
+  @Override 
+  public float getLoadingWeight(){
+  	float physicalCpuUsage = getRMNode().getNodeLoadingStatus().getCpuUsagePercentage();
+  	float physicalMemUsage = getRMNode().getNodeLoadingStatus().getMemoryUsagePercentage();
+  	float physicalLoading = physicalCpuUsage*0.5f + physicalMemUsage*0.5f; // TODO 不一定是0.5
+  	/**
+  	float CpuUsage = (float)getAllocatedResource().getVirtualCores() 
+  											/ getTotalResource().getVirtualCores();
+  	float MemUsage = (float)getAllocatedResource().getMemorySize() 
+  											/ getTotalResource().getMemorySize();
+  	**/
+  	// TODO
+  	return physicalLoading;
+  }
 }
