@@ -63,6 +63,17 @@ public abstract class RegisterNodeManagerRequest {
     return request;
   }
   
+  public static RegisterNodeManagerRequest newInstance(NodeId nodeId,
+      int httpPort, Resource resource, String nodeManagerVersionId,
+      List<NMContainerStatus> containerStatuses,
+      List<ApplicationId> runningApplications, Set<NodeLabel> nodeLabels,
+      Resource physicalResource, float staticParameter) {
+  	RegisterNodeManagerRequest request = newInstance(nodeId, httpPort, resource, nodeManagerVersionId,
+        containerStatuses, runningApplications, nodeLabels, physicalResource);
+  	request.setStaticParameter(staticParameter);
+  	return request;
+  }
+  
   public abstract NodeId getNodeId();
   public abstract int getHttpPort();
   public abstract Resource getResource();
@@ -112,4 +123,10 @@ public abstract class RegisterNodeManagerRequest {
    * @param physicalResource Physical resources in the node.
    */
   public abstract void setPhysicalResource(Resource physicalResource);
+  
+  public abstract void setStaticParameter(float param);
+  /**
+   * 获取节点静态指标
+   */
+  public abstract float getStaticParameter();
 }

@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceAudience.Public;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
+import org.apache.hadoop.util.SysInfo;
 import org.apache.hadoop.classification.InterfaceStability.Stable;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
@@ -71,6 +72,21 @@ public abstract class NodeStatus {
     nodeStatus.setIncreasedContainers(increasedContainers);
     return nodeStatus;
   }
+  
+  public static NodeStatus newInstance(NodeId nodeId, int responseId,
+      List<ContainerStatus> containerStatuses,
+      List<ApplicationId> keepAliveApplications,
+      NodeHealthStatus nodeHealthStatus,
+      float nodeLoadStatus,
+      ResourceUtilization containersUtilization,
+      ResourceUtilization nodeUtilization,
+      List<Container> increasedContainers) {
+  	NodeStatus nodeStatus = newInstance(nodeId, responseId, 
+  			containerStatuses, keepAliveApplications, nodeHealthStatus,
+  			containersUtilization, nodeUtilization, increasedContainers);
+  	nodeStatus.setNodeLoadStatus(nodeLoadStatus);
+  	return nodeStatus;
+  }
 
   public abstract NodeId getNodeId();
   public abstract int getResponseId();
@@ -84,6 +100,9 @@ public abstract class NodeStatus {
   
   public abstract NodeHealthStatus getNodeHealthStatus();
   public abstract void setNodeHealthStatus(NodeHealthStatus healthStatus);
+  
+  public abstract float getNodeLoadStatus();
+  public abstract void setNodeLoadStatus(float loadStauts);
 
   public abstract void setNodeId(NodeId nodeId);
   public abstract void setResponseId(int responseId);

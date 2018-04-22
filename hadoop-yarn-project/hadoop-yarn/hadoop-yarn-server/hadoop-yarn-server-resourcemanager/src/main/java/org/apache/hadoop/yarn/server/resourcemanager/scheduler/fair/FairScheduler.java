@@ -183,8 +183,10 @@ public class FairScheduler extends
   // Sleep time for each pass in continuous scheduling
   protected volatile int continuousSchedulingSleepMs;
   // Node available resource comparator
-  private Comparator<FSSchedulerNode> nodeAvailableResourceComparator =
-          new NodeAvailableResourceComparator();
+   private Comparator<FSSchedulerNode> nodeAvailableResourceComparator =
+           new NodeAvailableResourceComparator();
+  private Comparator<FSSchedulerNode> nodeLoadComparator =
+  				new NodeLoadComparator();
   protected double nodeLocalityThreshold; // Cluster threshold for node locality
   protected double rackLocalityThreshold; // Cluster threshold for rack locality
   protected long nodeLocalityDelayMs; // Delay for node locality
@@ -948,7 +950,8 @@ public class FairScheduler extends
     // Hold a lock to prevent comparator order changes due to changes of node
     // unallocated resources
     synchronized (this) {
-      nodeIdList = nodeTracker.sortedNodeList(nodeAvailableResourceComparator);
+      // nodeIdList = nodeTracker.sortedNodeList(nodeAvailableResourceComparator);
+      nodeIdList = nodeTracker.sortedNodeList(nodeLoadComparator);
     }
 
     // iterate all nodes
@@ -986,6 +989,26 @@ public class FairScheduler extends
           n1.getUnallocatedResource());
     }
   }
+  
+  /** 根据节点负载排序 **/
+  private class NodeLoadComparator
+		  implements Comparator<FSSchedulerNode> {
+		
+		@Override
+		public int compare(FSSchedulerNode n1, FSSchedulerNode n2) {
+			float ratio1 = (float)n1.getUnallocatedResource().getMemorySize() 
+												/ n1.getTotalResource().getMemorySize();
+			float ratio2 = (float)n2.getUnallocatedResource().getMemorySize() 
+					/ n2.getTotalResource().getMemorySize();
+			
+			ratio1 *= n1.getStaticParameter()/n1.getLoadStatus();
+			ratio2 *= n2.getStaticParameter()/n2.getLoadStatus();
+			
+			if(ratio1<ratio2) return 1;
+			else if(ratio1>ratio2) return -1;
+			return 0;
+		}
+	}
 
   private boolean shouldContinueAssigning(int containers,
       Resource maxResourcesToAssign, Resource assignedResource) {

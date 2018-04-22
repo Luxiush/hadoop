@@ -44,10 +44,14 @@ import org.apache.hadoop.yarn.proto.YarnServerCommonProtos.NodeStatusProtoOrBuil
 import org.apache.hadoop.yarn.proto.YarnServerCommonProtos.OpportunisticContainersStatusProto;
 
 import org.apache.hadoop.yarn.server.api.records.OpportunisticContainersStatus;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.yarn.server.api.records.NodeHealthStatus;
 import org.apache.hadoop.yarn.server.api.records.NodeStatus;
 
 public class NodeStatusPBImpl extends NodeStatus {
+	private static final Log LOG = LogFactory.getLog(NodeStatusPBImpl.class);
+
   NodeStatusProto proto = NodeStatusProto.getDefaultInstance();
   NodeStatusProto.Builder builder = null;
   boolean viaProto = false;
@@ -332,6 +336,18 @@ public class NodeStatusPBImpl extends NodeStatus {
       builder.clearNodeHealthStatus();
     }
     this.nodeHealthStatus = healthStatus;
+  }
+  
+  @Override
+  public synchronized float getNodeLoadStatus(){  	
+  	NodeStatusProtoOrBuilder p = viaProto ? proto : builder;
+    return p.getNodeLoadStatus();
+  }
+  
+  @Override 
+  public synchronized void setNodeLoadStatus(float nodeLoadStatus){
+  	maybeInitBuilder();
+  	builder.setNodeLoadStatus(nodeLoadStatus);
   }
 
   @Override

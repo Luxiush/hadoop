@@ -212,4 +212,23 @@ public class RMNodeWrapper implements RMNode {
   public Resource getPhysicalResource() {
     return null;
   }
+
+	@Override
+	public float getStaticParameter() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public float getLoadStatus() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void updateLoadStatus(float loadStatus) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

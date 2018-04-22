@@ -66,6 +66,7 @@ message RegisterNodeManagerRequestProto {
   repeated ApplicationIdProto runningApplications = 7;
   optional NodeLabelsProto nodeLabels = 8;
   optional ResourceProto physicalResource = 9;
+  optional float staticParameter = 10;
 }
 
 message RegisterNodeManagerResponseProto {

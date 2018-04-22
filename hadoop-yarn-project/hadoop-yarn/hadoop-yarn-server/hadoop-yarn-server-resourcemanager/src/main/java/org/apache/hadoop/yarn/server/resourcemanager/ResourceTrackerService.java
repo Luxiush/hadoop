@@ -323,6 +323,7 @@ public class ResourceTrackerService extends AbstractService implements
     Resource capability = request.getResource();
     String nodeManagerVersion = request.getNMVersion();
     Resource physicalResource = request.getPhysicalResource();
+    float staticParameter = request.getStaticParameter();
 
     RegisterNodeManagerResponse response = recordFactory
         .newRecordInstance(RegisterNodeManagerResponse.class);
@@ -392,7 +393,8 @@ public class ResourceTrackerService extends AbstractService implements
         .getCurrentKey());
 
     RMNode rmNode = new RMNodeImpl(nodeId, rmContext, host, cmPort, httpPort,
-        resolve(host), capability, nodeManagerVersion, physicalResource);
+        resolve(host), capability, nodeManagerVersion, physicalResource, 
+        staticParameter);
 
     RMNode oldNode = this.rmContext.getRMNodes().putIfAbsent(nodeId, rmNode);
     if (oldNode == null) {
@@ -454,6 +456,7 @@ public class ResourceTrackerService extends AbstractService implements
       message.append(", node labels { ").append(
           StringUtils.join(",", nodeLabels) + " } ");
     }
+    message.append(", staticParameter: ").append(staticParameter);	// <LOG>
 
     LOG.info(message.toString());
     response.setNodeAction(NodeAction.NORMAL);
@@ -579,6 +582,9 @@ public class ResourceTrackerService extends AbstractService implements
         .getLogAggregationReportsForApps());
     }
     this.rmContext.getDispatcher().getEventHandler().handle(nodeStatusEvent);
+    
+    // 更新节点负载信息
+    rmNode.updateLoadStatus(remoteNodeStatus.getNodeLoadStatus());
 
     // 5. Update node's labels to RM's NodeLabelManager.
     if (isDistributedNodeLabelsConf && request.getNodeLabels() != null) {

@@ -23,6 +23,9 @@ import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.yarn.api.records.Resource;
 
+/**
+ * Only consider memory
+ */
 @Private
 @Unstable
 public class DefaultResourceCalculator extends ResourceCalculator {

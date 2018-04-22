@@ -125,6 +125,8 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
 
   private String healthReport;
   private long lastHealthReportTime;
+  private float staticParameter;
+  private float loadStatus;
   private String nodeManagerVersion;
   private Integer decommissioningTimeout;
 
@@ -366,6 +368,14 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
     this(nodeId, context, hostName, cmPort, httpPort, node, capability,
         nodeManagerVersion, null);
   }
+  
+  public RMNodeImpl(NodeId nodeId, RMContext context, String hostName,
+      int cmPort, int httpPort, Node node, Resource capability,
+      String nodeManagerVersion, Resource physResource, float staticParameter){
+  	this(nodeId, context, hostName, cmPort, httpPort, node, capability,
+        nodeManagerVersion, physResource);
+  	this.staticParameter = staticParameter;
+  }
 
   public RMNodeImpl(NodeId nodeId, RMContext context, String hostName,
       int cmPort, int httpPort, Node node, Resource capability,
@@ -380,6 +390,7 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
     this.httpAddress = hostName + ":" + httpPort;
     this.node = node;
     this.healthReport = "Healthy";
+    this.loadStatus = -1;
     this.lastHealthReportTime = System.currentTimeMillis();
     this.nodeManagerVersion = nodeManagerVersion;
     this.timeStamp = 0;
@@ -482,6 +493,22 @@ public class RMNodeImpl implements RMNode, EventHandler<RMNodeEvent> {
     } finally {
       this.writeLock.unlock();
     }
+  }
+  
+  @Override
+  public float getStaticParameter(){
+  	return this.staticParameter;
+  }
+  
+  @Override
+  public float getLoadStatus(){
+  	return this.loadStatus;
+  }
+  
+  @Override
+  public void updateLoadStatus(float loadStatus){
+  	LOG.info("updateLoadStatus: <"+getHostName()+","+loadStatus+">");		// <LOG>
+  	this.loadStatus = loadStatus;
   }
   
   @Override

@@ -376,7 +376,7 @@ public class FSLeafQueue extends FSQueue {
    * should not be checked for starvation.
    *
    * @param assignment whether the apps are for allocation containers, as
-   *                   opposed to preemption calculations
+   *                   opposed(对立的) to preemption calculations
    * @return Set of apps with unmet demand
    */
   private TreeSet<FSAppAttempt> fetchAppsWithDemand(boolean assignment) {

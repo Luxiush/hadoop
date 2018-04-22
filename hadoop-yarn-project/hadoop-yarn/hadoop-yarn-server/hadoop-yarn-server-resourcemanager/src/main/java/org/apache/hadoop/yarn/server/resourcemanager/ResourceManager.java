@@ -141,13 +141,13 @@ public class ResourceManager extends CompositeService implements Recoverable {
   private static final Log LOG = LogFactory.getLog(ResourceManager.class);
   private static long clusterTimeStamp = System.currentTimeMillis();
 
+  @VisibleForTesting
+  protected RMContextImpl rmContext;
+  private Dispatcher rmDispatcher;
   /**
    * "Always On" services. Services that need to run always irrespective of
    * the HA state of the RM.
    */
-  @VisibleForTesting
-  protected RMContextImpl rmContext;
-  private Dispatcher rmDispatcher;
   @VisibleForTesting
   protected AdminService adminService;
 

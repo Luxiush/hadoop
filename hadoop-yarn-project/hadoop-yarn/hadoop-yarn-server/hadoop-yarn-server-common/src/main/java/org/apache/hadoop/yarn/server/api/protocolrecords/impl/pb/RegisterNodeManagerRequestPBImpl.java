@@ -330,6 +330,18 @@ public class RegisterNodeManagerRequestPBImpl extends RegisterNodeManagerRequest
   }
   
   @Override
+	public float getStaticParameter() {
+  	RegisterNodeManagerRequestProtoOrBuilder p = viaProto ? proto : builder;
+  	return p.getStaticParameter();
+	}
+  
+	@Override
+	public void setStaticParameter(float param) {
+    maybeInitBuilder();
+    builder.setStaticParameter(param);
+	}
+
+  @Override
   public synchronized Set<NodeLabel> getNodeLabels() {
     initNodeLabels();
     return this.labels;

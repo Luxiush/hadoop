@@ -88,6 +88,21 @@ public interface RMNode {
    * @return the time of the latest health report received from this node.
    */
   public long getLastHealthReportTime();
+  
+  /**
+   * 获取节点静态参数
+   */
+  public float getStaticParameter();
+  
+  /**
+   * 获取节点负载信息
+   */
+  public float getLoadStatus();
+  
+  /**
+   * 更新节点负载信息
+   */
+  public void updateLoadStatus(float loadStatus);
 
   /**
    * the node manager version of the node received as part of the

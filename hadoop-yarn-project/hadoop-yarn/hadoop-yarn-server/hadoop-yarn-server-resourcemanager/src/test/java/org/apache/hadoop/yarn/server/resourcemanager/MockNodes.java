@@ -286,6 +286,24 @@ public class MockNodes {
     public Resource getPhysicalResource() {
       return this.physicalResource;
     }
+
+		@Override
+		public float getStaticParameter() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public float getLoadStatus() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public void updateLoadStatus(float loadStatus) {
+			// TODO Auto-generated method stub
+			
+		}
   };
 
   private static RMNode buildRMNode(int rack, final Resource perNode,

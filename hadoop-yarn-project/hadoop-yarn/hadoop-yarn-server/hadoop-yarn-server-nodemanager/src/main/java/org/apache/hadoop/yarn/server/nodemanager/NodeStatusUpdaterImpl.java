@@ -44,6 +44,7 @@ import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.SysInfo;
 import org.apache.hadoop.util.VersionUtil;
 import org.apache.hadoop.yarn.api.protocolrecords.SignalContainerRequest;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -140,6 +141,7 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
 
   private final NodeHealthCheckerService healthChecker;
   private final NodeManagerMetrics metrics;
+  private final SysInfo sysInfo = SysInfo.newInstance();
 
   private Runnable statusUpdaterRunnable;
   private Thread  statusUpdater;
@@ -352,11 +354,12 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
     // ContainerManagerImpl#startContainers to avoid race condition
     // during RM recovery
     synchronized (this.context) {
+    	float staticParameter = getNodeStaticParameter();
       List<NMContainerStatus> containerReports = getNMContainerStatuses();
       RegisterNodeManagerRequest request =
           RegisterNodeManagerRequest.newInstance(nodeId, httpPort, totalResource,
               nodeManagerVersionId, containerReports, getRunningApplications(),
-              nodeLabels, physicalResource);
+              nodeLabels, physicalResource, staticParameter);
       if (containerReports != null) {
         LOG.info("Registering with RM using containers :" + containerReports);
       }
@@ -466,6 +469,9 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
       LOG.debug("Node's health-status : " + nodeHealthStatus.getIsNodeHealthy()
           + ", " + nodeHealthStatus.getHealthReport());
     }
+    
+    float nodeLoadStatus = getNodeLoadStatus();
+
     List<ContainerStatus> containersStatuses = getContainerStatuses();
     ResourceUtilization containersUtilization = getContainersUtilization();
     ResourceUtilization nodeUtilization = getNodeUtilization();
@@ -473,12 +479,40 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
         = getIncreasedContainers();
     NodeStatus nodeStatus =
         NodeStatus.newInstance(nodeId, responseId, containersStatuses,
-          createKeepAliveApplicationList(), nodeHealthStatus,
+          createKeepAliveApplicationList(), nodeHealthStatus, nodeLoadStatus,
           containersUtilization, nodeUtilization, increasedContainers);
 
     nodeStatus.setOpportunisticContainersStatus(
         getOpportunisticContainersStatus());
     return nodeStatus;
+  }
+  
+  /**
+   * 计算节点的负载
+   */
+  @VisibleForTesting
+  protected float getNodeLoadStatus(){
+  	float cpuUsage = sysInfo.getCpuUsagePercentage();
+  	float memUsage = (float)sysInfo.getAvailablePhysicalMemorySize() 
+  											/ sysInfo.getPhysicalMemorySize() * 100F;
+  	memUsage = 100 - memUsage;
+  	float loadStatus = (cpuUsage + memUsage) / 2;
+  	return loadStatus;
+  }
+  
+  /**
+   * 计算节点静态性能参数
+   */
+  @VisibleForTesting
+  protected float getNodeStaticParameter(){
+  	float memSize = sysInfo.getPhysicalMemorySize()
+  											/ (1024F*1024F*1024F);	// B => G
+  	float cpuFrequency = sysInfo.getCpuFrequency() 
+  											/ (1024F*1024F);				// K => G
+  	long numProcessor = sysInfo.getNumProcessors();
+  	float staticParameter = (memSize + cpuFrequency*numProcessor) / 2F;
+  	// LOG.info("getNodeStaticParameter:<"+memSize+","+cpuFrequency+","+numProcessor+">");	// <LOG>
+  	return staticParameter;
   }
 
   /**
