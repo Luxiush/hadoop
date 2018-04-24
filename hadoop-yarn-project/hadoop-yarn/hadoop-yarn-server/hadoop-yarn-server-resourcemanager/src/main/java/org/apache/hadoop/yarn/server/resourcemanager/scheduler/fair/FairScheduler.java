@@ -106,6 +106,7 @@ import org.apache.hadoop.yarn.util.resource.DefaultResourceCalculator;
 import org.apache.hadoop.yarn.util.resource.DominantResourceCalculator;
 import org.apache.hadoop.yarn.util.resource.ResourceCalculator;
 import org.apache.hadoop.yarn.util.resource.Resources;
+import org.w3c.dom.NodeList;
 
 /**
  * A scheduler that schedules resources between a set of queues. The scheduler
@@ -933,9 +934,10 @@ public class FairScheduler extends
       long start = getClock().getTime();
       eventLog.log("HEARTBEAT", nm.getHostName());
       super.nodeUpdate(nm);
-
-      FSSchedulerNode fsNode = getFSSchedulerNode(nm.getNodeID());
-      attemptScheduling(fsNode);
+      
+      // 统一在schedulingThread中进行分配
+      // FSSchedulerNode fsNode = getFSSchedulerNode(nm.getNodeID());
+      // attemptScheduling(fsNode);
 
       long duration = getClock().getTime() - start;
       fsOpDurations.addNodeUpdateDuration(duration);
@@ -951,18 +953,39 @@ public class FairScheduler extends
     // unallocated resources
     synchronized (this) {
       // nodeIdList = nodeTracker.sortedNodeList(nodeAvailableResourceComparator);
-      nodeIdList = nodeTracker.sortedNodeList(nodeLoadComparator);
+      nodeIdList = nodeTracker.getAllNodes();
     }
-
-    // iterate all nodes
-    for (FSSchedulerNode node : nodeIdList) {
-      try {
-        if (Resources.fitsIn(minimumAllocation,
-            node.getUnallocatedResource())) {
-          attemptScheduling(node);
-        }
-      } catch (Throwable ex) {
-        LOG.error("Error while attempting scheduling for node " + node +
+    // LOG.info("Continue: size of nodeIdList: "+nodeIdList.size());
+    
+    // 找到"最小"的节点
+    FSSchedulerNode minNode = null;
+    FSSchedulerNode node = null;
+    int i = 0;
+    for (;i<nodeIdList.size(); i++){
+    	node = nodeIdList.get(i);
+    	if (Resources.fitsIn(minimumAllocation, node.getUnallocatedResource())){
+    		minNode = node; 
+    		i++;
+    		break;
+    	}
+    }
+    // if(minNode != null)
+    // 	LOG.info("Continue: init minNode with: <"+i+","+minNode.getNodeName()+","+minNode.getUnallocatedResource()+">");
+    // else LOG.info("Continue: init minNode with: ["+i+",NULL]");
+  	for (; i<nodeIdList.size(); i++){
+    	node = nodeIdList.get(i);
+    	// LOG.info("Continue: for <"+i+","+node.getNodeName()+","+node.getUnallocatedResource()+">");
+    	if (Resources.fitsIn(minimumAllocation, node.getUnallocatedResource()) &&
+    			nodeLoadComparator.compare(node, minNode) == -1){
+    		minNode = node;
+    	}
+    }
+    if (minNode != null){
+    	// LOG.info("Continue: minNode finally: <"+i+","+minNode.getNodeName()+","+minNode.getUnallocatedResource()+">");
+    	try {
+    		attemptScheduling(minNode);
+    	} catch (Throwable ex) {
+    		LOG.error("Error while attempting scheduling for node " + minNode +
             ": " + ex.toString(), ex);
         if ((ex instanceof YarnRuntimeException) &&
             (ex.getCause() instanceof InterruptedException)) {
@@ -971,8 +994,9 @@ public class FairScheduler extends
           // Need to throw InterruptedException to stop schedulingThread.
           throw (InterruptedException)ex.getCause();
         }
-      }
+    	}
     }
+    // else LOG.info("Continue: minNode finally: ["+i+",NULL]");
 
     long duration = getClock().getTime() - start;
     fsOpDurations.addContinuousSchedulingRunDuration(duration);
@@ -996,13 +1020,18 @@ public class FairScheduler extends
 		
 		@Override
 		public int compare(FSSchedulerNode n1, FSSchedulerNode n2) {
-			float ratio1 = (float)n1.getUnallocatedResource().getMemorySize() 
+			float ratio10 = (float)n1.getUnallocatedResource().getMemorySize() 
 												/ n1.getTotalResource().getMemorySize();
-			float ratio2 = (float)n2.getUnallocatedResource().getMemorySize() 
+			float ratio20 = (float)n2.getUnallocatedResource().getMemorySize() 
 					/ n2.getTotalResource().getMemorySize();
 			
-			ratio1 *= n1.getStaticParameter()/n1.getLoadStatus();
-			ratio2 *= n2.getStaticParameter()/n2.getLoadStatus();
+			float ratio1 = ratio10 * n1.getStaticParameter()/n1.getLoadStatus();
+			float ratio2 = ratio20 * n2.getStaticParameter()/n2.getLoadStatus();
+			
+			// <LOG>
+//			LOG.info("Compare: "
+//					+ "<"+n1.getNodeName()+","+ratio10+","+n1.getStaticParameter()+","+n1.getLoadStatus()+","+ratio1+">,"
+//					+ "<"+n2.getNodeName()+","+ratio20+","+n2.getStaticParameter()+","+n2.getLoadStatus()+","+ratio2+">");
 			
 			if(ratio1<ratio2) return 1;
 			else if(ratio1>ratio2) return -1;
