@@ -43,6 +43,7 @@ import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.service.AbstractService;
+import org.apache.hadoop.util.CpuTimeTracker;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.SysInfo;
 import org.apache.hadoop.util.VersionUtil;
@@ -141,7 +142,11 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
 
   private final NodeHealthCheckerService healthChecker;
   private final NodeManagerMetrics metrics;
+  
   private final SysInfo sysInfo = SysInfo.newInstance();
+  private float cpuUsage = 0f;
+  private float memUsage = 0f;
+  private final float exponentialWeight = 0.75f;
 
   private Runnable statusUpdaterRunnable;
   private Thread  statusUpdater;
@@ -488,7 +493,7 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
   }
   
   /**
-   * 计算节点的负载
+   * 计算节点的负载, 指数加权滑动平均
    */
   @VisibleForTesting
   protected float getNodeLoadStatus(){
@@ -496,7 +501,15 @@ public class NodeStatusUpdaterImpl extends AbstractService implements
   	float memUsage = (float)sysInfo.getAvailablePhysicalMemorySize() 
   											/ sysInfo.getPhysicalMemorySize() * 100F;
   	memUsage = 100 - memUsage;
-  	float loadStatus = (cpuUsage + memUsage) / 2;
+  	
+  	if (cpuUsage != CpuTimeTracker.UNAVAILABLE){
+  		this.cpuUsage = exponentialWeight*cpuUsage 
+  										+ (1-exponentialWeight)*this.cpuUsage;
+  	}
+  	this.memUsage = exponentialWeight*memUsage
+  										+ (1-exponentialWeight)*this.memUsage;
+  	
+  	float loadStatus = (this.cpuUsage + this.memUsage) / 2;
   	return loadStatus;
   }
   

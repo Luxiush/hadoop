@@ -248,13 +248,13 @@ public abstract class SchedulerNode {
     Container container = info.container.getContainer();
     updateResourceForReleasedContainer(container);
 
-    if (LOG.isDebugEnabled()) {		// <LOG>
+    // if (LOG.isDebugEnabled()) {		// <LOG>
       LOG.info("Released container " + container.getId() + " of capacity "
               + container.getResource() + " on host " + rmNode.getNodeAddress()
               + ", which currently has " + numContainers + " containers, "
               + getAllocatedResource() + " used and " + getUnallocatedResource()
               + " available" + ", release resources=" + true);
-    }
+    // }
   }
 
   /**
